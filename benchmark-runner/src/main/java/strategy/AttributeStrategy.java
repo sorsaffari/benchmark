@@ -19,7 +19,6 @@
 package strategy;
 
 import ai.grakn.concept.AttributeType;
-import com.sun.xml.internal.bind.v2.schemagen.xmlschema.AttributeType;
 import pdf.PDF;
 import pick.StreamProviderInterface;
 

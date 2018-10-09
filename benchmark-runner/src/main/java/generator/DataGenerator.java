@@ -100,7 +100,9 @@ public class DataGenerator {
 
     public void loadSchema() {
         System.out.println("Initialising keyspace `" + this.keyspace + "`...");
-        SchemaManager.initialise(this.getSession(), schemaGraqlQueries);
+        Grakn.Session session = this.getSession();
+        SchemaManager.initialise(session, schemaGraqlQueries);
+        session.close();
         System.out.println("done");
     }
 
@@ -331,7 +333,7 @@ public class DataGenerator {
     }
 
     private Grakn.Session getSession() {
-        return (new Grakn(new SimpleURI((uri)))).session(Keyspace.of(keyspace));
+        return (new Grakn(new SimpleURI((uri)), true)).session(Keyspace.of(keyspace));
     }
 
     public void generate(int numConceptsLimit) {
@@ -369,6 +371,7 @@ public class DataGenerator {
                 tx.commit();
             }
         }
+        session.close();
     }
 
     private void processQueryStream(Stream<Query> queryStream) {

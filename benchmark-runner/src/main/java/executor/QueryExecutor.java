@@ -75,7 +75,7 @@ public class QueryExecutor {
     }
 
     public int aggregateCount() {
-        Grakn client = new Grakn(new SimpleURI(uri));
+        Grakn client = new Grakn(new SimpleURI(uri), true);
         Grakn.Session session = client.session(Keyspace.of(keyspace));
 
         try (Grakn.Transaction tx = session.transaction(GraknTxType.READ)) {
@@ -86,7 +86,7 @@ public class QueryExecutor {
 
     void processQueries(Stream<Query> queryStream, int numRepeats, int numConcepts, String msg) throws Exception {
         // instantiate grakn client
-        Grakn client = new Grakn(new SimpleURI(uri));
+        Grakn client = new Grakn(new SimpleURI(uri), true);
         Grakn.Session session = client.session(Keyspace.of(keyspace));
 
         try (Grakn.Transaction tx = session.transaction(GraknTxType.WRITE)) {
@@ -134,7 +134,6 @@ public class QueryExecutor {
             Thread.sleep(1500);
             System.out.println(counter);
         }
+        session.close();
     }
-
-
 }

@@ -18,11 +18,10 @@
 
 package pick;
 
-import ai.grakn.GraknTx;
+import ai.grakn.client.Grakn;
 import pdf.PDF;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.stream.Stream;
 
 /**
@@ -36,6 +35,7 @@ public class CentralStreamProvider<T> implements StreamProviderInterface<T> {
     public CentralStreamProvider(StreamInterface<T> streamer) {
         this.streamer = streamer;
         this.isReset = true;
+        this.conceptIdList = new ArrayList<>();
     }
 
     @Override
@@ -44,23 +44,25 @@ public class CentralStreamProvider<T> implements StreamProviderInterface<T> {
     }
 
     @Override
-    public Stream<T> getStream(PDF pdf, GraknTx tx) {
+    public Stream<T> getStream(PDF pdf, Grakn.Transaction tx) {
         // Get the same list as used previously, or generate one if not seen before
         // Only create a new stream if reset() has been called prior
 
         int streamLength = pdf.next();
         if (this.isReset) {
 
-            Stream<T> stream = this.streamer.getStream(streamLength,tx);
-            //Read stream to list and store to be used again later
-
-            this.conceptIdList = new ArrayList<>();
-
-
-            Iterator<T> iter = stream.limit(streamLength).iterator();
-            while (iter.hasNext()) {
-                this.conceptIdList.add(iter.next());
+            // TODO remove this hack when we have negation
+            if (this.streamer instanceof NotInRelationshipConceptIdStream) {
+                ((NotInRelationshipConceptIdStream)this.streamer).setRequiredLength(streamLength);
             }
+
+            // don't bother with checking if the stream is long enough here, might just return a reduced length...
+            Stream<T> stream = this.streamer.getStream(tx);
+
+            //Read stream to list and store to be used again later
+            this.conceptIdList.clear();
+
+            stream.limit(streamLength).forEach(conceptId -> this.conceptIdList.add(conceptId));
 
             this.isReset = false;
         }

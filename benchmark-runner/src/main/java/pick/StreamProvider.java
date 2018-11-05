@@ -18,7 +18,7 @@
 
 package pick;
 
-import ai.grakn.GraknTx;
+import ai.grakn.client.Grakn;
 import pdf.PDF;
 
 import java.util.stream.Stream;
@@ -38,16 +38,26 @@ public class StreamProvider<T> implements StreamProviderInterface<T> {
     }
 
     @Override
-    public Stream<T> getStream(PDF pdf, GraknTx tx) {
+    public Stream<T> getStream(PDF pdf, Grakn.Transaction tx) {
         // Simply limit the stream of ConceptIds to the number given by the pdf
         int streamLength = pdf.next();
 
-        Stream<T> stream = this.streamer.getStream(streamLength,tx);
+        if (this.streamer.checkAvailable(streamLength, tx)) {
 
-        //TODO also check the stream in case it curtails with nulls?
+            // NOTE this is a negation hack, just like notInRelationConceptIdStream implementation
+            if (this.streamer instanceof NotInRelationshipConceptIdStream) {
+                ((NotInRelationshipConceptIdStream)this.streamer).setRequiredLength(streamLength);
+            }
 
-        // Return the unadjusted stream but with a limit
-        return stream.limit(streamLength);
+            // limit check for availability of # required
+            Stream<T> stream = this.streamer.getStream(tx);
+
+            //TODO also check the stream in case it curtails with nulls?
+
+            // Return the unadjusted stream but with a limit
+            return stream.limit(streamLength);
+        } else {
+            return Stream.empty();
+        }
     }
 }
-

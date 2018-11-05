@@ -27,6 +27,7 @@ import ai.grakn.concept.Label;
 import ai.grakn.concept.RelationshipType;
 import ai.grakn.concept.SchemaConcept;
 import com.google.common.collect.ImmutableMap;
+import scala.Int;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -68,7 +69,6 @@ public class IgniteConceptIdStore implements IdStoreInterface {
             .put(BOOLEAN, "BOOLEAN")
             .put(LONG, "LONG")
             .put(DOUBLE, "DOUBLE")
-            .put(INTEGER, "INTEGER")
             .put(FLOAT, "FLOAT")
             .put(DATE, "DATE")
             .build();
@@ -209,10 +209,7 @@ public class IgniteConceptIdStore implements IdStoreInterface {
                 } else if (value.getClass() == Double.class) {
                     stmt.setDouble(ID_INDEX, (Double) value);
 
-                } else if (value.getClass() == Integer.class) {
-                    stmt.setInt(ID_INDEX, (Integer) value);
-
-                } else if (value.getClass() == Long.class) {
+                } else if (value.getClass() == Long.class || value.getClass() == Integer.class) {
                     stmt.setLong(ID_INDEX, (Long) value);
 
                 } else if (value.getClass() == Boolean.class) {
@@ -262,42 +259,95 @@ public class IgniteConceptIdStore implements IdStoreInterface {
     [{FETCH {FIRST | NEXT} expression {ROW | ROWS} ONLY}]}]
      */
 
-    public <T> T get(String typeLabel, Class<T> datatype, int offset) {
+    private String sqlGet(String typeLabel, int offset) {
         String sql = "SELECT id FROM " + getTableName(typeLabel) +
                 " OFFSET " + offset +
                 " FETCH FIRST ROW ONLY";
-//        ResultSet rs = this.runQuery(sql);
+        return sql;
+    }
+
+    public ConceptId getConceptId(String typeLabel, int offset) {
         try (Statement stmt = conn.createStatement()) {
-            try (ResultSet rs = stmt.executeQuery(sql)) {
-
+            try (ResultSet rs = stmt.executeQuery(sqlGet(typeLabel, offset))) {
                 if (rs != null && rs.next()) { // Need to do this to increment one line in the ResultSet
-                    if (datatype == ConceptId.class) {
-                        return datatype.cast(ConceptId.of(rs.getString(ID_INDEX)));
-
-                    } else if (datatype == String.class) {
-                        return datatype.cast(rs.getString(ID_INDEX));
-
-                    } else if (datatype == Double.class) {
-                        return datatype.cast(rs.getDouble(ID_INDEX));
-
-                    } else if (datatype == Integer.class) {
-                        return datatype.cast(rs.getInt(ID_INDEX));
-
-                    } else if (datatype == Long.class) {
-                        return datatype.cast(rs.getLong(ID_INDEX));
-
-                    } else if (datatype == Boolean.class) {
-                        return datatype.cast(rs.getBoolean(ID_INDEX));
-
-                    } else if (datatype == Date.class) {
-                        return datatype.cast(rs.getDate(ID_INDEX));
-                    } else {
-                        throw new UnsupportedOperationException(String.format("Datatype %s isn't supported by Grakn", datatype));
-                    }
-                } else {
-                    return null;
+                    return ConceptId.of(rs.getString(ID_INDEX));
                 }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
+    public String getString(String typeLabel, int offset) {
+        try (Statement stmt = conn.createStatement()) {
+            try (ResultSet rs = stmt.executeQuery(sqlGet(typeLabel, offset))) {
+                if (rs != null && rs.next()) { // Need to do this to increment one line in the ResultSet
+                    return rs.getString(ID_INDEX);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+
+    }
+
+    public Double getDouble(String typeLabel, int offset) {
+        try (Statement stmt = conn.createStatement()) {
+            try (ResultSet rs = stmt.executeQuery(sqlGet(typeLabel, offset))) {
+                if (rs != null && rs.next()) { // Need to do this to increment one line in the ResultSet
+                    return rs.getDouble(ID_INDEX);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Long getLong(String typeLabel, int offset) {
+        try (Statement stmt = conn.createStatement()) {
+            try (ResultSet rs = stmt.executeQuery(sqlGet(typeLabel, offset))) {
+                if (rs != null && rs.next()) { // Need to do this to increment one line in the ResultSet
+                    return rs.getLong(ID_INDEX);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Boolean getBoolean(String typeLabel, int offset) {
+        try (Statement stmt = conn.createStatement()) {
+            try (ResultSet rs = stmt.executeQuery(sqlGet(typeLabel, offset))) {
+                if (rs != null && rs.next()) { // Need to do this to increment one line in the ResultSet
+                    return rs.getBoolean(ID_INDEX);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Date getDate(String typeLabel, int offset) {
+        try (Statement stmt = conn.createStatement()) {
+            try (ResultSet rs = stmt.executeQuery(sqlGet(typeLabel, offset))) {
+                if (rs != null && rs.next()) { // Need to do this to increment one line in the ResultSet
+                    return rs.getDate(ID_INDEX);
+                }
             } catch (SQLException e) {
                 e.printStackTrace();
             }

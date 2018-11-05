@@ -18,10 +18,9 @@
 
 package storage;
 
-import ai.grakn.GraknSession;
-import ai.grakn.GraknTx;
 import ai.grakn.GraknTxType;
-import ai.grakn.concept.AttributeType;
+import ai.grakn.client.Grakn;
+import ai.grakn.concept.Label;
 import ai.grakn.concept.Role;
 import ai.grakn.concept.SchemaConcept;
 import ai.grakn.concept.Type;
@@ -33,7 +32,6 @@ import ai.grakn.graql.Var;
 import ai.grakn.graql.answer.ConceptMap;
 import ai.grakn.util.Schema;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,17 +42,26 @@ import static ai.grakn.graql.internal.pattern.Patterns.var;
  */
 public class SchemaManager {
 
-    public static void initialise(GraknSession session, List<String> graqlSchemaQueries) {
 
-        try (GraknTx tx = session.transaction(GraknTxType.WRITE)) {
+    public static void initialiseKeyspace(Grakn.Session session, List<String> graqlSchemaQueries) {
+        clearKeyspace(session);
+        try (Grakn.Transaction tx = session.transaction(GraknTxType.WRITE)) {
+            tx.graql().parser().parseList(graqlSchemaQueries.stream().collect(Collectors.joining("\n"))).forEach(Query::execute);
+            tx.commit();
+        }
+    }
+
+    private static void clearKeyspace(Grakn.Session session) {
+        try (Grakn.Transaction tx = session.transaction(GraknTxType.WRITE)) {
+            // delete all attributes, relationships, entities from keyspace
 
             QueryBuilder qb = tx.graql();
             Var x = Graql.var().asUserDefined();  //TODO This needed to be asUserDefined or else getting error: ai.grakn.exception.GraqlQueryException: the variable $1528883020589004 is not in the query
             Var y = Graql.var().asUserDefined();
 
-            // qb.match(x.isa("thing")).delete(x).execute();  // TODO Only got a complaint at runtime when using delete() without supplying a variable
             // TODO Sporadically has errors, logged in bug #20200
 
+            // cannot use delete "thing", complains
             qb.match(x.isa("attribute")).delete(x).execute();
             qb.match(x.isa("relationship")).delete(x).execute();
             qb.match(x.isa("entity")).delete(x).execute();
@@ -70,12 +77,11 @@ public class SchemaManager {
                 qb.undefine(z.id(element.get(y).id())).execute();
             }
 
-            tx.graql().parser().parseList(graqlSchemaQueries.stream().collect(Collectors.joining("\n"))).forEach(Query::execute);
             tx.commit();
         }
     }
 
-    public static <T extends Type> HashSet<T> getTypesOfMetaType(GraknTx tx, String metaTypeName) {
+    public static <T extends Type> HashSet<T> getTypesOfMetaType(Grakn.Transaction tx, String metaTypeName) {
         QueryBuilder qb = tx.graql();
         Match match = qb.match(var("x").sub(metaTypeName));
         List<ConceptMap> result = match.get().execute();
@@ -87,7 +93,7 @@ public class SchemaManager {
                 .collect(Collectors.toCollection(HashSet::new));
     }
 
-    public static HashSet<Role> getRoles(GraknTx tx, String metaTypeName) {
+    public static HashSet<Role> getRoles(Grakn.Transaction tx, String metaTypeName) {
         QueryBuilder qb = tx.graql();
         Match match = qb.match(var("x").sub(metaTypeName));
         List<ConceptMap> result = match.get().execute();
@@ -99,22 +105,15 @@ public class SchemaManager {
                 .collect(Collectors.toCollection(HashSet::new));
     }
 
-    public static <T extends SchemaConcept> T getTypeFromString(String typeName, HashSet<T> typeInstances) {
-        Iterator iter = typeInstances.iterator();
-        String l;
-        T currentType;
 
-        while (iter.hasNext()) {
-            currentType = (T) iter.next();
-            l = currentType.label().toString();
-            if (l.equals(typeName)) {
-                return currentType;
-            }
-        }
-        throw new RuntimeException("Couldn't find a concept type with name \"" + typeName + "\"");
+    public static boolean isTypeLabelAttribute(Grakn.Transaction tx, String label) {
+        SchemaConcept concept= tx.getSchemaConcept(Label.of(label));
+        return concept.isAttributeType();
     }
 
-    public static AttributeType.DataType getDatatype(String typeName, HashSet<Type> typeInstances) {
-        return null;
+    public static Class getAttributeDatatype(Grakn.Transaction tx, String label) throws ClassNotFoundException {
+        SchemaConcept concept = tx.getSchemaConcept(Label.of(label));
+        String name = concept.asAttributeType().dataType().getName();
+        return Class.forName(name);
     }
 }

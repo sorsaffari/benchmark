@@ -18,6 +18,8 @@
 
 package manage;
 
+import ai.grakn.client.Grakn;
+import ai.grakn.util.SimpleURI;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import executionconfig.BenchmarkConfiguration;
@@ -73,7 +75,7 @@ public class BenchmarkManager {
     public BenchmarkManager(BenchmarkConfiguration configuration, DataGenerator dataGenerator, QueryExecutor queryExecutor) {
         this.dataGenerator = dataGenerator;
         this.queryExecutor = queryExecutor;
-        this.numQueryRepetitions = configuration.noQueryRepetitions();
+        this.numQueryRepetitions = configuration.numQueryRepetitions();
         this.configuration = configuration;
     }
 
@@ -241,7 +243,9 @@ public class BenchmarkManager {
         }
 
         // use given keyspace string if exists, otherwise use yaml file `name` tag
-        String keyspace = arguments.getOptionValue("keyspace", benchmarkConfiguration.getDefaultKeyspace());
+        if (arguments.hasOption("keyspace")) {
+            benchmarkConfiguration.setKeyspace(arguments.getOptionValue("keyspace"));
+        }
 
         // loading a schema file, enabled by default
         boolean noSchemaLoad = arguments.hasOption("no-schema-load") ? true : false;
@@ -257,14 +261,23 @@ public class BenchmarkManager {
         String dateString = dateFormat.format(new Date());
         executionName = String.join(" ", Arrays.asList(dateString, benchmarkConfiguration.getName(), executionName)).trim();
 
+        Grakn client = new Grakn(new SimpleURI(Configs.GRAKN_URI));
 
+        // workaround to make deletions work...
+        if (!benchmarkConfiguration.noSchemaLoad()) {
+            System.out.println("Deleting keyspace `" + benchmarkConfiguration.getKeyspace() + "`");
+            client.keyspaces().delete(benchmarkConfiguration.getKeyspace());
+        }
+
+        Grakn.Session session = client.session(benchmarkConfiguration.getKeyspace());
+        int randomSeed = 0;
 
         // no data generation means NEITHER schema load NOR data generate
         DataGenerator dataGenerator = benchmarkConfiguration.noDataGeneration() ?
                 null :
-                new DataGenerator(keyspace, Configs.GRAKN_URI, benchmarkConfiguration.getSchema());
+                new DataGenerator(session, benchmarkConfiguration.getName(), benchmarkConfiguration.getSchemaGraql(), randomSeed);
 
-        QueryExecutor queryExecutor = new QueryExecutor(keyspace,
+        QueryExecutor queryExecutor = new QueryExecutor(benchmarkConfiguration.getKeyspace(),
                                             Configs.GRAKN_URI,
                                             executionName,
                                             benchmarkConfiguration.getQueries());
@@ -274,5 +287,3 @@ public class BenchmarkManager {
         ignite.close();
     }
 }
-
-

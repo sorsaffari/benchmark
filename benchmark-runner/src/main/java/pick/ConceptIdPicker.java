@@ -18,7 +18,7 @@
 
 package pick;
 
-import ai.grakn.GraknTx;
+import ai.grakn.client.Grakn;
 import ai.grakn.concept.ConceptId;
 import ai.grakn.graql.Pattern;
 import ai.grakn.graql.QueryBuilder;
@@ -35,6 +35,7 @@ import static ai.grakn.graql.Graql.count;
 /**
  *
  */
+@Deprecated
 public class ConceptIdPicker extends Picker<ConceptId> {
 
     protected Pattern matchVarPattern;
@@ -47,14 +48,13 @@ public class ConceptIdPicker extends Picker<ConceptId> {
     }
 
     /**
-     * @param streamLength
      * @param tx
      * @return
      */
     @Override
-    public Stream<ConceptId> getStream(int streamLength, GraknTx tx) {
+    public Stream<ConceptId> getStream(Grakn.Transaction tx) {
 
-        Stream<Integer> randomUniqueOffsetStream = this.getRandomOffsetStream(streamLength, tx);
+        Stream<Integer> randomUniqueOffsetStream = this.getStreamOfRandomOffsets(tx);
         if (randomUniqueOffsetStream == null ) {
             return Stream.empty();
         }
@@ -63,7 +63,7 @@ public class ConceptIdPicker extends Picker<ConceptId> {
 
             QueryBuilder qb = tx.graql();
 
-            // TODO The following gives exception: Exception in thread "main" java.lang.ClassCastException: ai.grakn.remote.RemoteGraknTx cannot be cast to ai.grakn.kb.internal.EmbeddedGraknTx
+            // TODO The following gives exception: Exception in thread "main" java.lang.ClassCastException: ai.grakn.remote.RemoteGrakn.Transaction cannot be cast to ai.grakn.kb.internal.EmbeddedGrakn.Transaction
             // TODO Waiting on bug fix
 //            Stream<Concept> resultStream = qb.match(this.matchVarPattern)
 //                    .offset(randomOffset)
@@ -86,7 +86,7 @@ public class ConceptIdPicker extends Picker<ConceptId> {
      * @param tx
      * @return
      */
-    protected Integer getConceptCount(GraknTx tx) {
+    public Integer getConceptCount(Grakn.Transaction tx) {
         QueryBuilder qb = tx.graql();
         // TODO This isn't working, waiting on bug fix - this was likely due to a mismatch between the Grakn active code and the Grakn build on my machine. Test to check if this is still a problem
         Value count_value = qb.match(this.matchVarPattern).aggregate(count()).execute().get(0);

@@ -18,6 +18,14 @@
 
 workspace(name = "benchmark")
 
+# TODO remove this when graknlabs/benchmark issue #58 is resolved
+# (this shouldn't have to be stated here?)
+git_repository(
+    name = "bazel_skylib",
+    remote = "https://github.com/bazelbuild/bazel-skylib.git",
+    tag = "0.1.0",  # change this to use a different release
+)
+
 # Load additional build tools, such bazel-deps and unused-deps
 load("//dependencies/tools:dependencies.bzl", "tools_dependencies")
 tools_dependencies()
@@ -25,3 +33,11 @@ tools_dependencies()
 
 load("//dependencies/maven:dependencies.bzl", "maven_dependencies")
 maven_dependencies()
+
+
+########################################
+#     Load Deployment Dependencies     #
+########################################
+
+load("//dependencies/deployment/maven:dependencies.bzl", maven_dependencies_for_deployment = "maven_dependencies")
+maven_dependencies_for_deployment()

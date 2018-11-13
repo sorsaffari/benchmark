@@ -16,16 +16,16 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package ai.grakn.benchmark.runner.executor;
+package grakn.benchmark.runner.executor;
 
-import ai.grakn.GraknTxType;
-import ai.grakn.Keyspace;
-import ai.grakn.client.Grakn;
-import ai.grakn.graql.Graql;
-import ai.grakn.graql.Query;
-import ai.grakn.graql.answer.Answer;
-import ai.grakn.graql.answer.Value;
-import ai.grakn.util.SimpleURI;
+import grakn.core.GraknTxType;
+import grakn.core.Keyspace;
+import grakn.core.client.Grakn;
+import grakn.core.graql.Graql;
+import grakn.core.graql.Query;
+import grakn.core.graql.answer.Answer;
+import grakn.core.graql.answer.Value;
+import grakn.core.util.SimpleURI;
 import brave.Span;
 import brave.Tracer;
 import brave.Tracing;
@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static ai.grakn.graql.Graql.var;
+import static grakn.core.graql.Graql.var;
 
 /**
  *
@@ -102,7 +102,7 @@ public class QueryExecutor {
                 Query query = queryIterator.next().withTx(tx);
                 LOG.info("Running query: " + query.toString());
 
-                Span batchSpan = tracer.newTrace().name("batch-query-span");
+                Span batchSpan = tracer.newTrace().name("batch-query");
                 batchSpan.tag("concepts", Integer.toString(numConcepts));
                 batchSpan.tag("query", query.toString());
                 batchSpan.tag("executionName", this.executionName);
@@ -115,7 +115,7 @@ public class QueryExecutor {
 
                 for (int i = 0; i < numRepeats; i++) {
 
-                    Span span = tracer.newChild(batchSpan.context()).name("query-span");
+                    Span span = tracer.newChild(batchSpan.context()).name("query-repetition");
                     span.tag("repetition", Integer.toString(i));
                     span.start();
 

@@ -154,3 +154,47 @@ dependencies:
     protobuf-java:
       version: 3.5.1
       lang: java
+
+  # hamcrest testing
+  org.hamcrest:
+    hamcrest-all:
+      version: "1.3"
+      lang: java
+    hamcrest-core:
+      version: "1.3"
+      lang: java
+    hamcrest-library:
+      version: "1.3"
+      lang: java
+
+
+  # ND4J -- numpy-ish equivalent for handling data arrays
+  # requries native binaries
+  # included linux and macosx here
+  # correct jar is chosen in BUILD file
+  org.nd4j:
+    nd4j-native:
+      version: "1.0.0-beta3"
+      lang: java
+      exclude:
+      - "org.nd4j:nd4j-backend-impls:jar.asc:macosx-x86_64"
+      - "org.nd4j:nd4j-backend-impls:jar.asc:linux-x86_64"
+    nd4j-api:
+      version: "1.0.0-beta3"
+      lang: java
+    nd4j-native-api:
+      version: "1.0.0-beta3"
+      lang: java
+    nd4j-buffer:
+      version: "1.0.0-beta3"
+      lang: java
+    nd4j-native:jar:macosx-x86_64:
+      version: "1.0.0-beta3"
+      lang: java
+      exclude:
+      - "org.nd4j:nd4j-backend-impls:jar.asc:macosx-x86_64"
+    nd4j-native:jar:linux-x86_64:
+      version: "1.0.0-beta3"
+      lang: java
+      exclude:
+      - "org.nd4j:nd4j-backend-impls:jar.asc:linux-x86_64.jar"

@@ -29,6 +29,37 @@ class DegreeAssortativityIT(unittest.TestCase):
     def setUp(self):
         self.assortativity = DegreeAssortativity()
 
+    def test_test(self):
+        adjacency = {
+            1: [2, 3],
+            2: [],
+            3: [4],
+
+            4: [],
+            5: [],
+            6: [4, 5, 7],
+
+            7: [8],
+            8: [9, 10],
+            9: [10],
+            10: []
+        }
+        edge_list = adjacency_to_edge_list(adjacency)
+        reader = GraphReader(edge_list=edge_list)
+        double_adjacency = reader.double_adjacency()
+
+        computed_assortativity = self.assortativity.compute_degree_assortativity(double_adjacency)
+
+        # this is the expected input format in networkx
+        vertex_ids = adjacency.keys()
+        edge_list = adjacency_to_edge_list(adjacency)
+
+        networkx_graph = nx.Graph() # using undirected graphs
+        networkx_graph.add_nodes_from(vertex_ids)
+        networkx_graph.add_edges_from(edge_list)
+        correct_assortativity = nx.degree_assortativity_coefficient(networkx_graph)
+
+        np.testing.assert_approx_equal(computed_assortativity,correct_assortativity, err_msg="Assortativity score mismatch in a binary graph without self-edges, that should be fully assortative")
 
     def test_degree_assortativity_fully_assortative_binary(self):
 
@@ -102,17 +133,16 @@ class DegreeAssortativityIT(unittest.TestCase):
 
     def test_degree_disassortative_binary(self):
         adjacency = {
-            1: [], # degree 1 connnected to degree 2
-            2: [], # degree 1 connected to degree 2
+            1: [],  # degree 1 connnected to degree 2
+            2: [],  # degree 1 connected to degree 2
             3: [1, 2],  # degree 2 connected to degree 1 twice
-            4: [6], # 1 -> 3
-            5: [6], # 1 -> 3
-            6: [7], # 3 -> 1, 1, 2
-            7: [8], # 2 -> 3, 4
-            8: [9, 10, 11], # 4 -> 2, 1, 1, 1
-            9: [], # 1 -> 4
-            10: [], # 1 -> 4
-            11: [] # 1 -> 4
+            4: [],  # 1 -> 3
+            5: [],  # 1 -> 3
+            6: [4, 5, 7],  # 3 -> 1, 1, 2
+            7: [],  # 2 -> 3, 4
+            8: [7, 9, 10],  # 4 -> 2, 1, 1, 1
+            9: [10],  # 1 -> 4
+            10: [],  # 1 -> 4
         }
         edge_list = adjacency_to_edge_list(adjacency)
         reader = GraphReader(edge_list=edge_list)
@@ -163,4 +193,3 @@ class DegreeAssortativityIT(unittest.TestCase):
         correct_assortativity = nx.degree_assortativity_coefficient(networkx_graph)
 
         np.testing.assert_approx_equal(computed_assortativity, correct_assortativity, err_msg="")
-

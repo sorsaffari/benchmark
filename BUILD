@@ -42,5 +42,8 @@ distribution(
         "data/logs",
         "data/data"
     ],
+    permissions = {
+        "runner/runner.sh": "0755"
+    },
     output_filename = "benchmark-runner",
 )

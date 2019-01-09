@@ -17,13 +17,21 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-set -e
+set -ex
+
+trap ctrl_c INT
+function ctrl_c() {
+  echo "Benchmark Runner Finshised. Stopping Elasticsearch..."
+  kill $elasticsearch_pid
+  echo "Stopping Zipkin..."
+  kill $zipkin_pid
+}
 
 # Benchmark global variables
 JAVA_BIN=java
 [[ $(readlink $0) ]] && path=$(readlink $0) || path=$0
 BENCHMARK_HOME=$(cd "$(dirname "${path}")" && pwd -P)
-
+EXTERNAL_DEPS_DIR=../external-dependencies
 SERVICE_LIB_CP="services/lib/*"
 
 # ================================================
@@ -48,12 +56,19 @@ exit_code=0
 pushd "$BENCHMARK_HOME" > /dev/null
 exit_if_java_not_found
 
+if [[ ! -f $EXTERNAL_DEPS_DIR/elasticsearch-6.3.2 ]]; then
+  echo "Unzipping Elasticsearch..."
+  unzip $EXTERNAL_DEPS_DIR/elasticsearch.zip -d external-dependencies/
+fi
+
 echo "Starting Elasticsearch..."
-./external-dependencies/elasticsearch-6.3.2/./bin/elasticsearch -E path.logs=data/logs/elasticsearch/ -E path.data=data/data/elasticsearch/ &
+$EXTERNAL_DEPS_DIR/elasticsearch-6.3.2/bin/elasticsearch -E path.logs=data/logs/elasticsearch/ -E path.data=data/data/elasticsearch/ &
+elasticsearch_pid=$!
 sleep 10
 
 echo "Starting Zipkin"
-ES_HOSTS=http://localhost:9200 env ES_INDEX="benchmarking" java -jar ./external-dependencies/zipkin.jar &
+ES_HOSTS=http://localhost:9200 env ES_INDEX="benchmarking" java -jar $EXTERNAL_DEPS_DIR/zipkin.jar &
+zipkin_pid=$!
 
 echo "Starting Benchmark Runner"
 CLASSPATH="${BENCHMARK_HOME}/${SERVICE_LIB_CP}"

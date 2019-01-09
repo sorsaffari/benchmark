@@ -70,8 +70,8 @@ http_file(
 ########################################
 git_repository(
     name="graknlabs_rules_deployment",
-    remote="https://github.com/lolski/deployment",
-    commit="c3130f67269548f1ab2647454e8640b0a54ede57",
+    remote="https://github.com/graknlabs/deployment",
+    commit="1fd6f328d55b28ca70b047894917cb169d5f028e",
 )
 
 load("//dependencies/deployment/maven:dependencies.bzl", maven_dependencies_for_deployment = "maven_dependencies")

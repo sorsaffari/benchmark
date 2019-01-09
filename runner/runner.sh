@@ -25,9 +25,9 @@ trap on_receiving_ctrl_c INT
 # Benchmark global variables
 JAVA_BIN=java
 [[ $(readlink $0) ]] && path=$(readlink $0) || path=$0
-BENCHMARK_HOME=$(cd "$(dirname "${path}")" && pwd -P)
-EXTERNAL_DEPS_DIR=../external-dependencies
-SERVICE_LIB_CP="services/lib/*"
+BENCHMARK_HOME=$(cd "$(dirname "${path}")/.." && pwd -P)
+BENCHMARK_RUNNER_EXTERNAL_DEPS_DIR=external-dependencies
+BENCHMARK_RUNNER_SERVICE_LIB_CP="runner/services/lib/*"
 
 # ================================================
 # common helper functions
@@ -57,12 +57,12 @@ exit_code=0
 pushd "$BENCHMARK_HOME" > /dev/null
 exit_if_java_not_found
 
-if [[ ! -d $EXTERNAL_DEPS_DIR/elasticsearch-6.3.2 ]]; then
+if [[ ! -d $BENCHMARK_RUNNER_EXTERNAL_DEPS_DIR/elasticsearch-6.3.2 ]]; then
   echo "Unzipping Elasticsearch..."
-  unzip $EXTERNAL_DEPS_DIR/elasticsearch.zip -d $EXTERNAL_DEPS_DIR
+  unzip $BENCHMARK_RUNNER_EXTERNAL_DEPS_DIR/elasticsearch.zip -d $BENCHMARK_RUNNER_EXTERNAL_DEPS_DIR
 fi
 echo -n "Starting Elasticsearch"
-$EXTERNAL_DEPS_DIR/elasticsearch-6.3.2/bin/elasticsearch -E path.logs=data/logs/elasticsearch/ -E path.data=data/data/elasticsearch/ &
+$BENCHMARK_RUNNER_EXTERNAL_DEPS_DIR/elasticsearch-6.3.2/bin/elasticsearch -E path.logs=data/logs/elasticsearch/ -E path.data=data/data/elasticsearch/ &
 elasticsearch_pid=$!
 until $(curl --output /dev/null --silent --head --fail localhost:9200); do
   echo -n "."
@@ -71,7 +71,7 @@ done
 echo
 
 echo -n "Starting Zipkin"
-ES_HOSTS=http://localhost:9200 env ES_INDEX="benchmarking" java -jar $EXTERNAL_DEPS_DIR/zipkin.jar &
+ES_HOSTS=http://localhost:9200 env ES_INDEX="benchmarking" java -jar $BENCHMARK_RUNNER_EXTERNAL_DEPS_DIR/zipkin.jar &
 zipkin_pid=$!
 until $(curl --output /dev/null --silent --head --fail localhost:9411); do
   echo -n "."
@@ -80,7 +80,7 @@ done
 echo
 
 echo "Starting Benchmark Runner"
-CLASSPATH="${BENCHMARK_HOME}/${SERVICE_LIB_CP}"
+CLASSPATH="${BENCHMARK_HOME}/${BENCHMARK_RUNNER_SERVICE_LIB_CP}"
 java -cp "${CLASSPATH}" grakn.benchmark.runner.BenchmarkRunner $@
 
 exit_code=$?

@@ -17,15 +17,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-set -ex
+# NOTE: use set -ex for debugging
+set -e
 
-trap ctrl_c INT
-function ctrl_c() {
-  echo "Benchmark Runner Finshised. Stopping Elasticsearch..."
-  kill $elasticsearch_pid
-  echo "Stopping Zipkin..."
-  kill $zipkin_pid
-}
+trap on_receiving_ctrl_c INT
 
 # Benchmark global variables
 JAVA_BIN=java
@@ -37,6 +32,13 @@ SERVICE_LIB_CP="services/lib/*"
 # ================================================
 # common helper functions
 # ================================================
+on_receiving_ctrl_c() {
+  echo "Benchmark Runner Finshised. Stopping Elasticsearch..."
+  kill $elasticsearch_pid
+  echo "Stopping Zipkin..."
+  kill $zipkin_pid
+}
+
 exit_if_java_not_found() {
   which "${JAVA_BIN}" > /dev/null
   exit_code=$?
@@ -50,25 +52,32 @@ exit_if_java_not_found() {
 # =============================================
 # main routine
 # =============================================
-
 exit_code=0
 
 pushd "$BENCHMARK_HOME" > /dev/null
 exit_if_java_not_found
 
-if [[ ! -f $EXTERNAL_DEPS_DIR/elasticsearch-6.3.2 ]]; then
+if [[ ! -d $EXTERNAL_DEPS_DIR/elasticsearch-6.3.2 ]]; then
   echo "Unzipping Elasticsearch..."
-  unzip $EXTERNAL_DEPS_DIR/elasticsearch.zip -d external-dependencies/
+  unzip $EXTERNAL_DEPS_DIR/elasticsearch.zip -d $EXTERNAL_DEPS_DIR
 fi
-
-echo "Starting Elasticsearch..."
+echo -n "Starting Elasticsearch"
 $EXTERNAL_DEPS_DIR/elasticsearch-6.3.2/bin/elasticsearch -E path.logs=data/logs/elasticsearch/ -E path.data=data/data/elasticsearch/ &
 elasticsearch_pid=$!
-sleep 10
+until $(curl --output /dev/null --silent --head --fail localhost:9200); do
+  echo -n "."
+  sleep 1
+done
+echo
 
-echo "Starting Zipkin"
+echo -n "Starting Zipkin"
 ES_HOSTS=http://localhost:9200 env ES_INDEX="benchmarking" java -jar $EXTERNAL_DEPS_DIR/zipkin.jar &
 zipkin_pid=$!
+until $(curl --output /dev/null --silent --head --fail localhost:9411); do
+  echo -n "."
+  sleep 1
+done
+echo
 
 echo "Starting Benchmark Runner"
 CLASSPATH="${BENCHMARK_HOME}/${SERVICE_LIB_CP}"

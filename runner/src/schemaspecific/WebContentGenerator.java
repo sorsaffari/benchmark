@@ -197,7 +197,7 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
                         new StreamProvider<>(fromIdStorageConceptIdPicker("person"))
                 ),
                 rolePlayerTypeStrategy(
-                        "group",
+                        "group_",
                         "project",
                         fixedConstant(1),
                         new CentralStreamProvider<>(fromIdStorageConceptIdPicker("project"))
@@ -216,7 +216,7 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
                         new StreamProvider<>(fromIdStorageConceptIdPicker("person"))
                 ),
                 rolePlayerTypeStrategy(
-                        "group",
+                        "group_",
                         "team",
                         fixedConstant(1),
                         new CentralStreamProvider<>(fromIdStorageConceptIdPicker("team"))

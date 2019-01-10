@@ -40,10 +40,10 @@ affiliation sub relationship,
     relates party;
 membership sub affiliation,
     relates member as party,
-    relates group as party;
+    relates group_ as party;
 employment sub affiliation,
     relates employee as member,
-    relates employer as group,
+    relates employer as group_,
     has job-title;
 ##################################################################
 # Ownership - this is quite a generic relationship
@@ -79,15 +79,15 @@ transitive-organisation-membership sub rule,
 when {
     $top isa organisation;
     (owner: $top, property: $bottom) isa ownership;
-    (group: $bottom, member: $memb) isa membership;
+    (group_: $bottom, member: $memb) isa membership;
 } then {
-    (group: $top, member: $memb) isa membership;
+    (group_: $top, member: $memb) isa membership;
 };
 ##################################################################
 # Projects
 ##################################################################
 project sub entity,
-    plays group,
+    plays group_,
     plays property,
     plays owner,
     has name;

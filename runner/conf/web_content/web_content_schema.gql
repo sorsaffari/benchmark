@@ -63,7 +63,7 @@ when {
 ##################################################################
 organisation sub entity,
     plays member,
-    plays group,
+    plays group_,
     plays property,
     plays owner,
     plays party,

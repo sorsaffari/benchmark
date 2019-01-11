@@ -100,7 +100,7 @@ public class DataGenerator {
         int conceptTotal = this.storage.total();
 
         while (conceptTotal < numConceptsLimit) {
-            System.out.printf("---- Iteration %d ----\n", this.iteration);
+            System.out.printf("\n---- Iteration %d ----\n", this.iteration);
             try (Grakn.Transaction tx = session.transaction(GraknTxType.WRITE)) {
 
                 //TODO Deal with this being an Object. TypeStrategy should be/have an interface for this purpose?
@@ -116,7 +116,11 @@ public class DataGenerator {
 
                 iteration++;
                 conceptTotal = this.storage.total();
-                System.out.printf(String.format("---- %d concepts ----\n", conceptTotal), this.iteration);
+                System.out.printf(String.format("---- %d concepts (based on ignite data):----\n", conceptTotal), this.iteration);
+                System.out.println(String.format("   %d entities", this.storage.totalEntities()));
+                System.out.println(String.format("   %d relationships", this.storage.totalRelationships()));
+                System.out.println(String.format("   %d attributes", this.storage.totalAttributes()));
+
                 tx.commit();
             }
         }

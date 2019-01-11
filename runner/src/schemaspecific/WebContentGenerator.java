@@ -68,7 +68,6 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
      * primary instances eg people/companies/employment etc.
      */
     private void primarySetup() {
-        // TODO needs tweaks to make nice outputs
 
         /*
 

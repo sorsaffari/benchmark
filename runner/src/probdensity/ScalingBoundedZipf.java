@@ -70,7 +70,10 @@ public class ScalingBoundedZipf implements ProbabilityDensityFunction {
 
         if (newScale != previousScale && newScale != 0) {
 
-            double expLowerBound = 1.0;
+            // this isn't a real zeta distribution, it's a zipf distribution
+            // so we can apparently go down to exponents near 0, if the range isn't too large
+            // in practical cases, we're probably looking at a range < 1 million nodes or so, which is fine
+            double expLowerBound = 0.001;
             double expUpperBound = 100.0;
 
             int oldRange = (int) (this.previousScale * this.rangeLimitFraction);

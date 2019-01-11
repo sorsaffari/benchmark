@@ -399,6 +399,24 @@ public class IgniteConceptIdStore implements IdStoreInterface {
         return total;
     }
 
+    @Override
+    public int totalRelationships() {
+        int total = 0;
+        for (String typeLabel : this.relationshipTypeLabels) {
+            total += this.getConceptCount(typeLabel);
+        }
+        return total;
+    }
+
+    @Override
+    public int totalAttributes() {
+        int total = 0;
+        for (String typeLabel : this.attributeTypeLabels.keySet()) {
+            total += this.getConceptCount(typeLabel);
+        }
+        return total;
+    }
+
 
     /**
      * Clean all elements in the storage

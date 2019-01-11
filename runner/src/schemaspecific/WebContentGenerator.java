@@ -68,7 +68,6 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
      * primary instances eg people/companies/employment etc.
      */
     private void primarySetup() {
-        // TODO needs tweaks to make nice outputs
 
         /*
 
@@ -80,7 +79,7 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
                 1,
                 new EntityStrategy(
                         "person",
-                        uniform(10, 70) // on avg, for every 40 people
+                        fixedUniform(10, 70) // on avg, for every 40 people
                 ));
 
         // --- company organisation ---
@@ -88,7 +87,7 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
                 1,
                 new EntityStrategy(
                         "company",
-                        uniform( 1, 5) // ...create 3 companies
+                        fixedUniform( 1, 5) // ...create 3 companies
                 ));
 
         // --- university organisation ---
@@ -96,7 +95,7 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
                 1,
                 new EntityStrategy(
                         "university",
-                        uniform( 1, 3) // ...2 universities
+                        fixedUniform( 1, 3) // ...2 universities
                 ));
 
         // --- department organisation ---
@@ -104,7 +103,7 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
                 1,
                 new EntityStrategy(
                         "department",
-                        uniform(3, 7) // 5 departments
+                        fixedUniform(3, 7) // 5 departments
                 ));
 
         // --- team organisation ---
@@ -112,7 +111,7 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
                 1,
                 new EntityStrategy(
                         "team",
-                        uniform( 4, 10) // 7 teams
+                        fixedUniform( 4, 10) // 7 teams
                 ));
 
         // --- project ---
@@ -120,7 +119,7 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
                 1,
                 new EntityStrategy(
                         "project",
-                        uniform( 5, 19) // 12 projects
+                        fixedUniform( 5, 19) // 12 projects
                 ));
 
         /*
@@ -142,13 +141,13 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
                 rolePlayerTypeStrategy(
                         "employee",
                         "person",
-                        constant(1),
+                        fixedConstant(1),
                         new StreamProvider<>(fromIdStorageConceptIdPicker("person"))
                 ),
                 rolePlayerTypeStrategy(
                         "employer",
                         "company",
-                        constant(1),
+                        fixedConstant(1),
                         new CentralStreamProvider<>(
                                 new NotInRelationshipConceptIdStream(
                                         "employment",
@@ -168,13 +167,13 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
                 rolePlayerTypeStrategy(
                         "employee",
                         "person",
-                        constant(1),
+                        fixedConstant(1),
                         new StreamProvider<>(fromIdStorageConceptIdPicker("person"))
                 ),
                 rolePlayerTypeStrategy(
                         "employer",
                         "university",
-                        constant(1),
+                        fixedConstant(1),
                         new CentralStreamProvider<>(
                                 new NotInRelationshipConceptIdStream(
                                         "employment",
@@ -193,13 +192,13 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
                 rolePlayerTypeStrategy(
                         "member",
                         "person",
-                        constant(1),
+                        fixedConstant(1),
                         new StreamProvider<>(fromIdStorageConceptIdPicker("person"))
                 ),
                 rolePlayerTypeStrategy(
-                        "group",
+                        "group_",
                         "project",
-                        constant(1),
+                        fixedConstant(1),
                         new CentralStreamProvider<>(fromIdStorageConceptIdPicker("project"))
                 )
         ));
@@ -212,13 +211,13 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
                 rolePlayerTypeStrategy(
                         "member",
                         "person",
-                        constant(1),
+                        fixedConstant(1),
                         new StreamProvider<>(fromIdStorageConceptIdPicker("person"))
                 ),
                 rolePlayerTypeStrategy(
-                        "group",
+                        "group_",
                         "team",
-                        constant(1),
+                        fixedConstant(1),
                         new CentralStreamProvider<>(fromIdStorageConceptIdPicker("team"))
                 )
         ));
@@ -233,13 +232,13 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
                 rolePlayerTypeStrategy(
                         "owner",
                         "company",
-                        constant(1),
+                        fixedConstant(1),
                         new StreamProvider<>(fromIdStorageConceptIdPicker("company"))
                 ),
                 rolePlayerTypeStrategy(
                         "property",
                         "department",
-                        constant(1),
+                        fixedConstant(1),
                         new StreamProvider<>(
                                 new NotInRelationshipConceptIdStream(
                                         "ownership",
@@ -260,13 +259,13 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
                 rolePlayerTypeStrategy(
                         "owner",
                         "university",
-                        constant(1),
+                        fixedConstant(1),
                         new StreamProvider<>(fromIdStorageConceptIdPicker("company"))
                 ),
                 rolePlayerTypeStrategy(
                         "property",
                         "department",
-                        constant(1),
+                        fixedConstant(1),
                         new StreamProvider<>(
                                 new NotInRelationshipConceptIdStream(
                                         "ownership",
@@ -287,13 +286,13 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
                 rolePlayerTypeStrategy(
                         "owner",
                         "department",
-                        constant(1),  // pick 1 department for this n from uniform(2,10)
+                        fixedConstant(1),  // pick 1 department for this n from fixedUniform(2,10)
                         new CentralStreamProvider<>(fromIdStorageConceptIdPicker("department"))
                 ),
                 rolePlayerTypeStrategy(
                         "property",
                         "team",
-                        constant(1),
+                        fixedConstant(1),
                         new StreamProvider<>(
                                 new NotInRelationshipConceptIdStream(
                                         "ownership",
@@ -313,13 +312,13 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
                 rolePlayerTypeStrategy(
                         "owner",
                         "team",
-                        constant(1),
+                        fixedConstant(1),
                         new StreamProvider<>(fromIdStorageConceptIdPicker("team"))
                 ),
                 rolePlayerTypeStrategy(
                         "property",
                         "project",
-                        constant(1),
+                        fixedConstant(1),
                         new StreamProvider<>(fromIdStorageConceptIdPicker("project"))
                 ))
         );
@@ -339,8 +338,8 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
 
         StringStreamGenerator sixCharStringGenerator = new StringStreamGenerator(random, 6);
         // Populate 200 random names for use as forename/middle/surname, company name etc.
-        // all with equal weights (ProbabilityDensityFunction = constant(1))
-        GrowableGeneratedRouletteWheel<String> names = new GrowableGeneratedRouletteWheel<>(random, sixCharStringGenerator, constant(1));
+        // all with equal weights (ProbabilityDensityFunction = fixedConstant(1))
+        GrowableGeneratedRouletteWheel<String> names = new GrowableGeneratedRouletteWheel<>(random, sixCharStringGenerator, fixedConstant(1));
         names.growTo(200);
 
         addAttributes(
@@ -371,7 +370,7 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
         );
 
         // employment.job-title
-        GrowableGeneratedRouletteWheel<String> jobtitles = new GrowableGeneratedRouletteWheel<>(random, sixCharStringGenerator, constant(1));
+        GrowableGeneratedRouletteWheel<String> jobtitles = new GrowableGeneratedRouletteWheel<>(random, sixCharStringGenerator, fixedConstant(1));
         jobtitles.growTo(50);
         addAttributes(
                 1.0,
@@ -384,7 +383,7 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
 
         // job-title.abbreviation (job-title is a type of name, which `has abbreviation`
         StringStreamGenerator twoCharStringGenerator = new StringStreamGenerator(random, 2);
-        GrowableGeneratedRouletteWheel<String> jobtitleAbbrs = new GrowableGeneratedRouletteWheel<>(random, twoCharStringGenerator, constant(1));
+        GrowableGeneratedRouletteWheel<String> jobtitleAbbrs = new GrowableGeneratedRouletteWheel<>(random, twoCharStringGenerator, fixedConstant(1));
         jobtitleAbbrs.growTo(50);
         addAttributes(
                 1.0,
@@ -417,7 +416,7 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
 
          // team.name
          StringStreamGenerator fourCharStringGenerator = new StringStreamGenerator(random, 4);
-         GrowableGeneratedRouletteWheel<String> shortNames = new GrowableGeneratedRouletteWheel<>(random, fourCharStringGenerator, constant(1));
+         GrowableGeneratedRouletteWheel<String> shortNames = new GrowableGeneratedRouletteWheel<>(random, fourCharStringGenerator, fixedConstant(1));
          shortNames.growTo(100);
          addAttributes(
                 1.0,
@@ -452,19 +451,19 @@ public class WebContentGenerator implements SchemaSpecificDataGenerator {
 
 
     // ---- helpers ----
-    private FixedUniform uniform(int lowerBound, int upperBound) {
+    private FixedUniform fixedUniform(int lowerBound, int upperBound) {
         return new FixedUniform(random, lowerBound, upperBound);
     }
 
-    private FixedDiscreteGaussian gaussian(double mean, double stddev) {
+    private FixedDiscreteGaussian fixedGaussian(double mean, double stddev) {
         return new FixedDiscreteGaussian(random, mean, stddev);
     }
 
-    private FixedBoundedZipf zipf(int rangeLimit, double exponent) {
+    private FixedBoundedZipf fixedZipf(int rangeLimit, double exponent) {
         return new FixedBoundedZipf(random, rangeLimit, exponent);
     }
 
-    private FixedConstant constant(int constant) {
+    private FixedConstant fixedConstant(int constant) {
         return new FixedConstant(constant);
     }
 

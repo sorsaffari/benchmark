@@ -30,4 +30,6 @@ public interface ConceptStore {
     int total();
 
     int totalEntities();
+    int totalRelationships();
+    int totalAttributes();
 }

@@ -27,12 +27,14 @@ distribution(
     },
     additional_files = {
         "//runner:runner.sh": "runner/runner.sh",
+        "//runner:setup.sh": "runner/setup.sh",
         "//runner:conf/societal_model/queries.yml": "runner/conf/societal_model/queries.yml",
         "//runner:conf/societal_model/societal_config_1.yml": "runner/conf/societal_model/societal_config_1.yml",
         "//runner:conf/societal_model/societal_model.gql": "runner/conf/societal_model/societal_model.gql",
         "//runner:conf/web_content/queries.yml": "runner/conf/web_content/queries.yml",
         "//runner:conf/web_content/web_content_config.yml": "runner/conf/web_content/web_content_config.yml",
         "//runner:conf/web_content/web_content_schema.gql": "runner/conf/web_content/web_content_schema.gql",
+        "//runner:logback": "runner/services/logback.xml",
         
         # External dependencies: Elasticsearch and Zipkin
         "@external-dependencies-zipkin//file": "external-dependencies/zipkin.jar",
@@ -45,5 +47,5 @@ distribution(
     permissions = {
         "runner/runner.sh": "0755"
     },
-    output_filename = "benchmark-runner",
+    output_filename = "benchmark",
 )

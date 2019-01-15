@@ -20,6 +20,7 @@ package grakn.benchmark.runner.generator;
 
 import grakn.benchmark.runner.schemaspecific.SchemaSpecificDataGenerator;
 import grakn.benchmark.runner.schemaspecific.SchemaSpecificDataGeneratorFactory;
+import grakn.benchmark.runner.util.BenchmarkConfiguration;
 import grakn.core.GraknTxType;
 import grakn.core.client.Grakn;
 import grakn.core.concept.*;
@@ -44,25 +45,23 @@ import java.util.stream.Stream;
  */
 public class DataGenerator {
 
-    Grakn.Session session;
-    String executionName;
-    List<String> schemaDefinition;
-
-
-    private int iteration = 0;
+    private final Grakn.Session session;
+    private final String executionName;
+    private final List<String> schemaDefinition;
+    private int iteration;
     private Random rand;
 
-    private boolean initialized = false;
     private ConceptStore storage;
 
     private SchemaSpecificDataGenerator dataStrategies;
 
-    public DataGenerator(Grakn.Session session, String executionName, List<String> schemaDefinition, int randomSeed) {
+    public DataGenerator(Grakn.Session session, BenchmarkConfiguration config, int randomSeed) {
         this.session = session;
-        this.executionName = executionName;
+        this.executionName = config.getConfigName();
         this.rand = new Random(randomSeed);
         this.iteration = 0;
-        this.schemaDefinition = schemaDefinition;
+        this.schemaDefinition = config.getGraqlSchema();
+        initializeGeneration();
     }
 
     public void loadSchema() {
@@ -71,7 +70,7 @@ public class DataGenerator {
         System.out.println("done");
     }
 
-    public void initializeGeneration() {
+    private void initializeGeneration() {
         try (Grakn.Transaction tx = session.transaction(GraknTxType.READ)) {
             HashSet<EntityType> entityTypes = SchemaManager.getTypesOfMetaType(tx, "entity");
             HashSet<RelationshipType> relationshipTypes = SchemaManager.getTypesOfMetaType(tx, "relationship");
@@ -80,13 +79,9 @@ public class DataGenerator {
         }
 
         this.dataStrategies = SchemaSpecificDataGeneratorFactory.getSpecificStrategy(this.executionName, this.rand, this.storage);
-        this.initialized = true;
     }
 
     public void generate(int graphScaleLimit) {
-        if (!this.initialized) {
-            throw new GeneratorUninitializedException("generate() can only be called after initializing the generation strategies");
-        }
 
         RouletteWheel<RouletteWheel<TypeStrategyInterface>> operationStrategies = this.dataStrategies.getStrategy();
         /*

@@ -16,13 +16,22 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package grakn.benchmark.runner.generator;
+package grakn.benchmark.runner.util;
+
+import java.util.List;
 
 /**
- *
+ *  Absorbs a list of strings that represent a query each
+ *  Top-level tag is 'queries'
  */
-public class GeneratorUninitializedException extends RuntimeException {
-    public GeneratorUninitializedException(String msg) {
-        super(msg);
+
+public class QueriesConfigurationFile {
+    private List<String> queries;
+
+    public void setQueries(List<String> queries ) {
+        this.queries = queries;
+    }
+    public List<String> getQueries() {
+        return this.queries;
     }
 }

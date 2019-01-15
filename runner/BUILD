@@ -16,11 +16,11 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-exports_files(glob(["conf/**/*"]) + ["runner.sh"], visibility = ["//visibility:public"])
+exports_files(glob(["conf/**/*"]) + ["runner.sh"] + ["setup.sh"], visibility = ["//visibility:public"])
 
 java_binary(
     name = "benchmark-runner-binary",
-    main_class = "grakn.benchmark.runner.BenchmarkRunner",
+    main_class = "grakn.benchmark.runner.GraknBenchmark",
     runtime_deps = ["//runner:benchmark-runner"],
     visibility = ["//visibility:public"]
  )
@@ -40,9 +40,11 @@ java_library(
         "//dependencies/maven/artifacts/io/zipkin/brave:brave",
 
         "//dependencies/maven/artifacts/org/slf4j:slf4j-api",
+        "//dependencies/maven/artifacts/ch/qos/logback:logback-classic",
 
         "//dependencies/maven/artifacts/org/apache/ignite:ignite-core",
         "//dependencies/maven/artifacts/org/apache/ignite:ignite-indexing",
+        "//dependencies/maven/artifacts/org/apache/ignite:ignite-slf4j",
 
         "//dependencies/maven/artifacts/org/elasticsearch/client:elasticsearch-rest-client",
         "//dependencies/maven/artifacts/org/apache/httpcomponents:httpcore",
@@ -50,42 +52,15 @@ java_library(
 
         "//dependencies/maven/artifacts/commons-cli",
         "//dependencies/maven/artifacts/org/apache/commons:commons-math3",
-
-        "//dependencies/maven/artifacts/junit:junit",
-        "//dependencies/maven/artifacts/org/mockito:mockito-core"
     ],
     runtime_deps = [
         "//dependencies/maven/artifacts/io/grpc:grpc-netty-shaded"
     ],
-
-    resources = [
-        "//runner:src/logback.xml"
-    ],
     visibility = ["//visibility:public"]
 )
 
-java_test(
-    name = "ignite-conceptid-store-test",
-    test_class = "grakn.benchmark.runner.storage.IgniteConceptIdStoreTest",
-    srcs = ["test/storage/IgniteConceptIdStoreTest.java"],
-
-    deps = [
-        ":benchmark-runner",
-        "//dependencies/maven/artifacts/org/mockito:mockito-core",
-        "//dependencies/maven/artifacts/grakn/core:grakn-graql",
-        "//dependencies/maven/artifacts/org/apache/ignite:ignite-core",
-        "//dependencies/maven/artifacts/org/apache/ignite:ignite-indexing"
-    ]
-)
-
-java_test(
-    name = "insertion-analysis-test",
-    test_class = "grakn.benchmark.runner.storage.InsertionAnalysisTest",
-    srcs = ["test/storage/InsertionAnalysisTest.java"],
-    deps = [
-        ":benchmark-runner",
-        "//dependencies/maven/artifacts/org/mockito:mockito-core",
-        "//dependencies/maven/artifacts/grakn/core:grakn-graql",
-        "//dependencies/maven/artifacts/org/hamcrest:hamcrest-all"
-    ]
+filegroup(
+    name = "logback",
+    srcs = ["src/logback.xml"],
+    visibility = ["//visibility:public"]
 )

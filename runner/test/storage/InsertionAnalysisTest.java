@@ -207,7 +207,7 @@ public class InsertionAnalysisTest {
     public void whenInsertRelationship_IdentifyRolePlayers() {
         VarPattern x = var("x").asUserDefined().id(ConceptId.of("V123"));
         VarPattern y = var("y").asUserDefined().id(ConceptId.of("V234"));
-        InsertQuery insertQuery = Graql.insert(x, y, var("r").rel(x).rel(y).isa("friendship"));
+        InsertQuery insertQuery = Graql.match(x, y).insert(var("r").rel(x).rel(y).isa("friendship"));
 
         Set<ConceptId> rolePlayerIds = InsertionAnalysis.getRolePlayers(insertQuery);
         assertTrue(rolePlayerIds.contains(ConceptId.of("V123")));

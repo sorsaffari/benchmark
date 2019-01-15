@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package grakn.benchmark.runner.executionconfig;
+package grakn.benchmark.runner.util;
 
 
 import java.util.List;
@@ -49,7 +49,7 @@ public class BenchmarkConfigurationFile {
     public void setQueries(String queriesYaml) {
         this.queries = queriesYaml;
     }
-    public String getRelativeQueriesYamlFile() {
+    public String getQueriesFilePath() {
         return this.queries;
     }
 

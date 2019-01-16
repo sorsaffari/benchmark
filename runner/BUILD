@@ -16,15 +16,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-exports_files(glob(["conf/**/*"]) + ["runner.sh"] + ["setup.sh"], visibility = ["//visibility:public"])
+exports_files(glob(["conf/**/*"]) + ["benchmark"] + ["setup.sh"], visibility = ["//visibility:public"])
 
 java_binary(
     name = "benchmark-runner-binary",
     main_class = "grakn.benchmark.runner.GraknBenchmark",
     runtime_deps = ["//runner:benchmark-runner"],
-    visibility = ["//visibility:public"],
-    classpath_resources = ["//runner:src/logback.xml"]
-)
+    visibility = ["//visibility:public"]
+ )
 
 java_library(
     name = "benchmark-runner",
@@ -58,7 +57,6 @@ java_library(
         "//dependencies/maven/artifacts/io/grpc:grpc-netty-shaded"
     ],
     visibility = ["//visibility:public"]
-
 )
 
 filegroup(

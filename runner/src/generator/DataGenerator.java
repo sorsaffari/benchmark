@@ -79,7 +79,6 @@ public class DataGenerator {
             LOG.debug("Initialising ignite...");
             this.storage = new IgniteConceptIdStore(entityTypes, relationshipTypes, attributeTypes);
         }
-        //  get the
         this.dataStrategies = SchemaSpecificDataGeneratorFactory.getSpecificStrategy(this.executionName, this.rand, this.storage);
     }
 

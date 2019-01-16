@@ -54,21 +54,23 @@ public class GraknBenchmark {
     private final String executionName;
 
     /**
-     * Entry point invoked by benchmark.sh script
+     * Entry point invoked by benchmark script
      */
     public static void main(String[] args) {
+        printAscii();
+        int exitCode = 0;
         Ignite ignite = initIgnite();
         try {
             ElasticSearchManager.init();
 
-            printAscii();
             GraknBenchmark benchmark = new GraknBenchmark(args);
             benchmark.start();
-
         } catch (Exception e) {
+            exitCode = 1;
             LOG.error("Unable to start Grakn Benchmark:", e);
         } finally {
             ignite.close();
+            System.exit(exitCode);
         }
     }
 
@@ -89,14 +91,13 @@ public class GraknBenchmark {
 
     /**
      * Start the Grakn Benchmark, which, based on arguments provided via console, will run one of the following use cases:
-     *  - generate synthetic data while profiling the graph at different sizes
-     *  - don't generate new data and only profile an existing keyspace
+     * - generate synthetic data while profiling the graph at different sizes
+     * - don't generate new data and only profile an existing keyspace
      */
     public void start() {
         Grakn client = new Grakn(new SimpleURI(config.uri()));
         Grakn.Session session = client.session(config.getKeyspace());
         SchemaManager.verifyEmptyKeyspace(session);
-
         QueryProfiler queryProfiler = new QueryProfiler(session, executionName, config.getQueries());
         int repetitionsPerQuery = config.numQueryRepetitions();
 
@@ -121,18 +122,18 @@ public class GraknBenchmark {
         session.close();
     }
 
-    private static Ignite initIgnite(){
+    private static Ignite initIgnite() {
+        System.setProperty("IGNITE_QUIET", "false"); // When Ignite is in quiet mode forces all the output to System.out, we don't want that
         System.setProperty("IGNITE_NO_ASCII", "true"); // Disable Ignite ASCII logo
         System.setProperty("IGNITE_PERFORMANCE_SUGGESTIONS_DISABLED", "true"); // Enable suggestions when need performance improvements
-        System.setProperty("java.net.preferIPv4Stack","true"); // As suggested by Ignite we set preference on IPv4
+        System.setProperty("java.net.preferIPv4Stack", "true"); // As suggested by Ignite we set preference on IPv4
         IgniteConfiguration igniteConfig = new IgniteConfiguration();
         IgniteLogger logger = new Slf4jLogger();
         igniteConfig.setGridLogger(logger);
         return Ignition.start(igniteConfig);
     }
 
-    private static void printAscii(){
-        System.out.println();
+    private static void printAscii() {
         System.out.println();
         System.out.println("========================================================================================================");
         System.out.println("   ______ ____   ___     __ __  _   __   ____   ______ _   __ ______ __  __ __  ___ ___     ____   __ __\n" +

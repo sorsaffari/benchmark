@@ -36,10 +36,7 @@ import grakn.benchmark.runner.strategy.TypeStrategyInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -76,6 +73,7 @@ public class DataGenerator {
             HashSet<EntityType> entityTypes = SchemaManager.getTypesOfMetaType(tx, "entity");
             HashSet<RelationshipType> relationshipTypes = SchemaManager.getTypesOfMetaType(tx, "relationship");
             HashSet<AttributeType> attributeTypes = SchemaManager.getTypesOfMetaType(tx, "attribute");
+
             LOG.debug("Initialising ignite...");
             this.storage = new IgniteConceptIdStore(entityTypes, relationshipTypes, attributeTypes);
         }
@@ -131,16 +129,26 @@ public class DataGenerator {
         queryStream.map(q -> (InsertQuery) q)
                 .forEach(q -> {
                     List<ConceptMap> insertions = q.execute();
-                    insertions.forEach(insert -> {
-                        HashSet<Concept> insertedConcepts = InsertionAnalysis.getInsertedConcepts(q, insertions);
-                        if (insertedConcepts.isEmpty()) {
-                            throw new RuntimeException("No concepts were inserted");
-                        }
-                        insertedConcepts.forEach(concept -> this.storage.addConcept(concept));
+                    HashSet<Concept> insertedConcepts = InsertionAnalysis.getInsertedConcepts(q, insertions);
+                    if (insertedConcepts.isEmpty()) {
+                        throw new RuntimeException("No concepts were inserted");
+                    }
+                    insertedConcepts.forEach(concept -> this.storage.addConcept(concept));
 
-                        Set<ConceptId> rolePlayers = InsertionAnalysis.getRolePlayers(q);
-                        rolePlayers.forEach(conceptId -> this.storage.addRolePlayer(conceptId.toString()));
-                    });
+                    // check if we have to update any roles by first checking if any relationships added
+                    String relationshipAdded = InsertionAnalysis.getRelationshipTypeLabel(q);
+                    if (relationshipAdded != null) {
+                        Map<Concept, String> rolePlayersAdded = InsertionAnalysis.getRolePlayersAndRoles(q, insertions);
+
+                        rolePlayersAdded.entrySet().stream()
+                                .forEach(entry ->
+                                        this.storage.addRolePlayer(
+                                                entry.getKey().id().toString(),
+                                                entry.getKey().asThing().type().label().toString(),
+                                                relationshipAdded,
+                                                entry.getValue()
+                                        ));
+                    }
                 });
     }
 

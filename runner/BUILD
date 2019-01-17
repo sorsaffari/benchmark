@@ -22,7 +22,8 @@ java_binary(
     name = "benchmark-runner-binary",
     main_class = "grakn.benchmark.runner.GraknBenchmark",
     runtime_deps = ["//runner:benchmark-runner"],
-    visibility = ["//visibility:public"]
+    visibility = ["//visibility:public"],
+    classpath_resources = ["logback"]
  )
 
 java_library(
@@ -52,6 +53,8 @@ java_library(
 
         "//dependencies/maven/artifacts/commons-cli",
         "//dependencies/maven/artifacts/org/apache/commons:commons-math3",
+
+        "//dependencies/maven/artifacts/com/google/guava:guava"
     ],
     runtime_deps = [
         "//dependencies/maven/artifacts/io/grpc:grpc-netty-shaded"

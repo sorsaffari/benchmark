@@ -45,7 +45,7 @@ import java.util.List;
  * Class in charge of
  * - initialising Benchmark dependencies and BenchmarkConfiguration
  * - run data generation (populate empty keyspace) (DataGenerator)
- * - run benchmark on queries (QueryExecutor)
+ * - run benchmark on queries (QueryProfiler)
  */
 public class GraknBenchmark {
     private static final Logger LOG = LoggerFactory.getLogger(GraknBenchmark.class);
@@ -61,9 +61,11 @@ public class GraknBenchmark {
         int exitCode = 0;
         Ignite ignite = initIgnite();
         try {
-            ElasticSearchManager.init();
+            // Parse the configuration for the benchmark
+            CommandLine arguments = BenchmarkArguments.parse(args);
 
-            GraknBenchmark benchmark = new GraknBenchmark(args);
+            ElasticSearchManager.init(arguments);
+            GraknBenchmark benchmark = new GraknBenchmark(arguments);
             benchmark.start();
         } catch (Exception e) {
             exitCode = 1;
@@ -74,18 +76,14 @@ public class GraknBenchmark {
         }
     }
 
-    public GraknBenchmark(String[] args) {
-
-        // Parse arguments from console
-        CommandLine arguments = BenchmarkArguments.parse(args);
-
-        // Build benchmark config
-        this.config = new BenchmarkConfiguration(arguments);
+    public GraknBenchmark(CommandLine arguments) {
+        BenchmarkConfiguration benchmarkConfig = new BenchmarkConfiguration(arguments);
+        this.config = benchmarkConfig;
 
         // generate a name for this specific execution of the benchmarking
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         String dateString = dateFormat.format(new Date());
-        this.executionName = String.join(" ", Arrays.asList(dateString, config.getConfigName(), arguments.getOptionValue("execution-name", ""))).trim();
+        this.executionName = String.join(" ", Arrays.asList(dateString, config.getConfigName(), config.executionName())).trim();
     }
 
 
@@ -95,7 +93,7 @@ public class GraknBenchmark {
      * - don't generate new data and only profile an existing keyspace
      */
     public void start() {
-        Grakn client = new Grakn(new SimpleURI(config.uri()), true);
+        Grakn client = new Grakn(new SimpleURI(config.graknUri()), true);
         Grakn.Session session = client.session(config.getKeyspace());
         SchemaManager.verifyEmptyKeyspace(session);
         QueryProfiler queryProfiler = new QueryProfiler(session, executionName, config.getQueries());

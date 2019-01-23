@@ -76,6 +76,13 @@ public class IgniteConceptIdStore implements IdStoreInterface {
         this.relationshipTypeLabels = this.getTypeLabels(relationshipTypes);
         this.attributeTypeLabels = this.getAttributeTypeLabels(attributeTypes);
 
+
+        // add @has-[attribute] relationships as possible relationships
+        // sanitize the @has-[attribute] to valid SQL strings
+        for (String s : this.attributeTypeLabels.keySet()) {
+            this.relationshipTypeLabels.add(convertTypeLabelToSqlName("@has-" + s));
+        }
+
         this.allTypeLabels = this.getAllTypeLabels();
 
         try {
@@ -101,18 +108,18 @@ public class IgniteConceptIdStore implements IdStoreInterface {
 
         // Create database tables.
         for (String typeLabel : this.entityTypeLabels) {
-            this.createTypeIdsTable(typeLabel, relationshipTypes);
+            this.createTypeIdsTable(typeLabel, relationshipTypes, attributeTypes);
         }
 
         for (String typeLabel : this.relationshipTypeLabels) {
-            this.createTypeIdsTable(typeLabel, relationshipTypes);
+            this.createTypeIdsTable(typeLabel, relationshipTypes, attributeTypes);
         }
 
         for (Map.Entry<String, AttributeType.DataType<?>> entry : this.attributeTypeLabels.entrySet()) {
             String typeLabel = entry.getKey();
             AttributeType.DataType<?> datatype = entry.getValue();
             String dbDatatype = DATATYPE_MAPPING.get(datatype);
-            this.createAttributeValueTable(typeLabel, dbDatatype, relationshipTypes);
+            this.createAttributeValueTable(typeLabel, dbDatatype, relationshipTypes, attributeTypes);
         }
 
         // re-create special table
@@ -151,11 +158,16 @@ public class IgniteConceptIdStore implements IdStoreInterface {
      * Create a table for storing concept IDs of the given type
      * @param typeLabel
      */
-    private void createTypeIdsTable(String typeLabel, Set<RelationshipType> relationshipTypes) {
+    private void createTypeIdsTable(String typeLabel, Set<RelationshipType> relationshipTypes, Set<AttributeType> attributeTypes) {
         String tableName = this.putTableName(typeLabel);
         List<String> relationshipColumnNames = relationshipTypes.stream()
                 .map(relType -> convertTypeLabelToSqlName(relType.label().toString()))
                 .collect(Collectors.toList());
+        List<String> hasAttributeRelationshipColumnNames = attributeTypes.stream()
+                .map(attrType -> convertTypeLabelToSqlName("@has-" + attrType.label().toString()))
+                .collect(Collectors.toList());
+
+        relationshipColumnNames.addAll(hasAttributeRelationshipColumnNames);
         createTable(tableName, "VARCHAR", relationshipColumnNames);
     }
 
@@ -165,17 +177,24 @@ public class IgniteConceptIdStore implements IdStoreInterface {
      * @param typeLabel
      * @param sqlDatatypeName
      */
-    private void createAttributeValueTable(String typeLabel, String sqlDatatypeName, Set<RelationshipType> relationshipTypes) {
+    private void createAttributeValueTable(String typeLabel, String sqlDatatypeName, Set<RelationshipType> relationshipTypes, Set<AttributeType> attributeTypes) {
 
-        List<String> furtherColumns = relationshipTypes.stream()
+        List<String> relationshipColumnNames= relationshipTypes.stream()
                 .map(relType -> convertTypeLabelToSqlName(relType.label().toString()))
                 .collect(Collectors.toList());
+
+        List<String> hasAttributeRelationshipColumnNames = attributeTypes.stream()
+                .map(attrType -> convertTypeLabelToSqlName("@has-" + attrType.label().toString()))
+                .collect(Collectors.toList());
+
+        relationshipColumnNames.addAll(hasAttributeRelationshipColumnNames);
+
         String tableName = convertTypeLabelToSqlName(typeLabel);
         try (Statement stmt = conn.createStatement()) {
             stmt.executeUpdate("CREATE TABLE " + tableName + " (" +
                     " id VARCHAR PRIMARY KEY, " +
                     " value " + sqlDatatypeName + ", " +
-                    joinColumnLabels(furtherColumns) +
+                    joinColumnLabels(relationshipColumnNames) +
                     " nothing LONG) " +
                     " WITH \"template=" + cachingMethod + "\"");
         } catch (SQLException e) {
@@ -211,8 +230,7 @@ public class IgniteConceptIdStore implements IdStoreInterface {
     }
 
     private String convertTypeLabelToSqlName(String typeLabel) {
-        return typeLabel.replace('-', '_');
-//                .replaceAll("[0-9]", "");
+        return typeLabel.replace('-', '_').replace("@", "__");
     }
 
     private String putTableName(String typeLabel) {
@@ -290,8 +308,6 @@ public class IgniteConceptIdStore implements IdStoreInterface {
             }
 
         } else {
-
-
             try (PreparedStatement stmt = this.conn.prepareStatement(
                     "INSERT INTO " + tableName + " (id, ) VALUES (?, )")) {
                 stmt.setString(ID_INDEX, conceptId);

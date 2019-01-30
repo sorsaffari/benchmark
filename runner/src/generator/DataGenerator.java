@@ -73,7 +73,6 @@ public class DataGenerator {
             HashSet<EntityType> entityTypes = SchemaManager.getTypesOfMetaType(tx, "entity");
             HashSet<RelationshipType> relationshipTypes = SchemaManager.getTypesOfMetaType(tx, "relationship");
             HashSet<AttributeType> attributeTypes = SchemaManager.getTypesOfMetaType(tx, "attribute");
-
             LOG.info("Initialising ignite...");
             this.storage = new IgniteConceptIdStore(entityTypes, relationshipTypes, attributeTypes);
         }
@@ -93,7 +92,6 @@ public class DataGenerator {
         int graphScale = dataStrategies.getGraphScale();
 
         while (graphScale < graphScaleLimit) {
-            graphScale = dataStrategies.getGraphScale();
             try (Grakn.Transaction tx = session.transaction(GraknTxType.WRITE)) {
                 TypeStrategyInterface typeStrategy = operationStrategies.next().next();
                 GeneratorInterface generator = gf.create(typeStrategy, tx); // TODO Can we do without creating a new generator each iteration
@@ -106,7 +104,7 @@ public class DataGenerator {
                 iteration++;
 
                 printProgress(graphScale, typeStrategy.getTypeLabel());
-
+                graphScale = dataStrategies.getGraphScale();
                 tx.commit();
             }
         }

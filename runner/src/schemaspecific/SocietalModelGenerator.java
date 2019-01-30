@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+@Deprecated
 public class SocietalModelGenerator implements SchemaSpecificDataGenerator {
 
     private Random random;
@@ -87,6 +88,7 @@ public class SocietalModelGenerator implements SchemaSpecificDataGenerator {
                         "company",
                         new FixedConstant(1),
                         new CentralStreamProvider<>(
+                                new FixedConstant(1),
                                 new NotInRelationshipConceptIdStream(
                                         "employment",
                                         "employer",

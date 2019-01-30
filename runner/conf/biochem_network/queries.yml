@@ -1,0 +1,5 @@
+queries:
+  - "match $x isa enzyme; get;"
+  - "match $x has $n; $n isa name; get;"
+  - "match $r (agent: $agent); get $agent;"
+

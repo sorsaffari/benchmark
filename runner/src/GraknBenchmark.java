@@ -18,9 +18,10 @@
 
 package grakn.benchmark.runner;
 
+import grakn.benchmark.runner.exception.DataGeneratorException;
 import grakn.benchmark.runner.executor.QueryProfiler;
 import grakn.benchmark.runner.generator.DataGenerator;
-import grakn.benchmark.runner.storage.SchemaManager;
+import grakn.benchmark.runner.util.SchemaManager;
 import grakn.benchmark.runner.util.BenchmarkArguments;
 import grakn.benchmark.runner.util.BenchmarkConfiguration;
 import grakn.benchmark.runner.util.ElasticSearchManager;
@@ -62,6 +63,9 @@ public class GraknBenchmark {
             ElasticSearchManager.putIndexTemplate(arguments);
             GraknBenchmark benchmark = new GraknBenchmark(arguments);
             benchmark.start();
+        } catch (DataGeneratorException e) {
+            exitCode = 1;
+            LOG.error("Error in data generator: ", e);
         } catch (Exception e) {
             exitCode = 1;
             LOG.error("Unable to start Grakn Benchmark:", e);

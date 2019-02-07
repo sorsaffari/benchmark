@@ -16,14 +16,14 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package grakn.benchmark.profiler.generator.concept;
+package grakn.benchmark.profiler.generator.query;
 
+import grakn.benchmark.profiler.generator.pick.PDFLimitedStreamProvider;
+import grakn.benchmark.profiler.generator.probdensity.FixedConstant;
+import grakn.benchmark.profiler.generator.strategy.AttributeStrategy;
 import grakn.core.graql.Graql;
 import grakn.core.graql.InsertQuery;
 import grakn.core.graql.Var;
-import grakn.benchmark.profiler.generator.probdensity.FixedConstant;
-import grakn.benchmark.profiler.generator.pick.StreamProviderInterface;
-import grakn.benchmark.profiler.generator.strategy.AttributeStrategy;
 
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -32,12 +32,15 @@ import java.util.stream.Stream;
 /**
  * @param <ValueDatatype>
  */
-public class AttributeGenerator< ValueDatatype> extends Generator<AttributeStrategy<ValueDatatype>> {
+public class AttributeGenerator<ValueDatatype> implements QueryGenerator {
+    private final AttributeStrategy<ValueDatatype> strategy;
+
     /**
      * @param strategy
      */
     public AttributeGenerator(AttributeStrategy<ValueDatatype> strategy) {
-        super(strategy);
+
+        this.strategy = strategy;
     }
 
     /**
@@ -47,7 +50,7 @@ public class AttributeGenerator< ValueDatatype> extends Generator<AttributeStrat
     public Stream<InsertQuery> generate() {
         int numInstances = this.strategy.getNumInstancesPDF().sample();
 
-        StreamProviderInterface<ValueDatatype> valuePicker = this.strategy.getPicker();
+        PDFLimitedStreamProvider<ValueDatatype> valuePicker = this.strategy.getPicker();
         valuePicker.reset();
         FixedConstant unityPDF = new FixedConstant(1);
 

@@ -1,6 +1,6 @@
-package grakn.benchmark.profiler.generator.schemaspecific;
+package grakn.benchmark.profiler.generator.definition;
 
-import grakn.benchmark.profiler.generator.pick.StreamProvider;
+import grakn.benchmark.profiler.generator.pick.StandardStreamProvider;
 import grakn.benchmark.profiler.generator.pick.StringStreamGenerator;
 import grakn.benchmark.profiler.generator.probdensity.FixedConstant;
 import grakn.benchmark.profiler.generator.probdensity.FixedDiscreteGaussian;
@@ -12,31 +12,31 @@ import grakn.benchmark.profiler.generator.strategy.AttributeStrategy;
 import grakn.benchmark.profiler.generator.strategy.EntityStrategy;
 import grakn.benchmark.profiler.generator.strategy.RelationshipStrategy;
 import grakn.benchmark.profiler.generator.strategy.RolePlayerTypeStrategy;
-import grakn.benchmark.profiler.generator.strategy.RouletteWheel;
+import grakn.benchmark.profiler.generator.pick.WeightedPicker;
 import grakn.benchmark.profiler.generator.strategy.TypeStrategy;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
 
-public class SocialNetworkDefinition implements SchemaSpecificDefinition {
+public class SocialNetworkDefinition extends DataGeneratorDefinition {
 
     private Random random;
     private ConceptStore storage;
 
-    private RouletteWheel<TypeStrategy> entityStrategies;
-    private RouletteWheel<TypeStrategy> relationshipStrategies;
-    private RouletteWheel<TypeStrategy> attributeStrategies;
-    private RouletteWheel<RouletteWheel<TypeStrategy>> metaTypeStrategies;
+    private WeightedPicker<TypeStrategy> entityStrategies;
+    private WeightedPicker<TypeStrategy> relationshipStrategies;
+    private WeightedPicker<TypeStrategy> attributeStrategies;
+    private WeightedPicker<WeightedPicker<TypeStrategy>> metaTypeStrategies;
 
     public SocialNetworkDefinition(Random random, ConceptStore storage) {
         this.random = random;
         this.storage = storage;
 
-        this.entityStrategies = new RouletteWheel<>(random);
-        this.relationshipStrategies = new RouletteWheel<>(random);
-        this.attributeStrategies = new RouletteWheel<>(random);
-        this.metaTypeStrategies = new RouletteWheel<>(random);
+        this.entityStrategies = new WeightedPicker<>(random);
+        this.relationshipStrategies = new WeightedPicker<>(random);
+        this.attributeStrategies = new WeightedPicker<>(random);
+        this.metaTypeStrategies = new WeightedPicker<>(random);
 
         buildGenerator();
     }
@@ -80,7 +80,7 @@ public class SocialNetworkDefinition implements SchemaSpecificDefinition {
                 new AttributeStrategy<>(
                         "name",
                         new FixedDiscreteGaussian(this.random,18, 3),
-                        new StreamProvider<>(nameStream)
+                        new StandardStreamProvider<>(nameStream)
                 )
         );
 
@@ -95,7 +95,7 @@ public class SocialNetworkDefinition implements SchemaSpecificDefinition {
                 "friend",
                 "friendship",
                 new FixedConstant(2),
-                new StreamProvider<>(
+                new StandardStreamProvider<>(
                     new FromIdStorageConceptIdPicker(
                         random,
                         this.storage,
@@ -117,13 +117,13 @@ public class SocialNetworkDefinition implements SchemaSpecificDefinition {
                 "liked",
                 "like",
                 new FixedConstant(1),
-                new StreamProvider<>(new FromIdStorageConceptIdPicker(random, storage, "page"))
+                new StandardStreamProvider<>(new FromIdStorageConceptIdPicker(random, storage, "page"))
         );
         RolePlayerTypeStrategy likerPersonRole = new RolePlayerTypeStrategy(
                 "liker",
                 "like",
                 new FixedConstant(1),
-                new StreamProvider<>(new FromIdStorageConceptIdPicker(random, storage, "person"))
+                new StandardStreamProvider<>(new FromIdStorageConceptIdPicker(random, storage, "person"))
         );
         this.relationshipStrategies.add(
                 1.0,
@@ -140,13 +140,13 @@ public class SocialNetworkDefinition implements SchemaSpecificDefinition {
                 "@has-name-owner",
                 "@has-name",
                 new FixedConstant(1),
-                new StreamProvider<>(new FromIdStorageConceptIdPicker(random, storage, "person"))
+                new StandardStreamProvider<>(new FromIdStorageConceptIdPicker(random, storage, "person"))
         );
         RolePlayerTypeStrategy nameValue = new RolePlayerTypeStrategy(
                 "@has-name-value",
                 "@has-name",
                 new FixedConstant(1),
-                new StreamProvider<>(new FromIdStorageConceptIdPicker(random, storage, "name"))
+                new StandardStreamProvider<>(new FromIdStorageConceptIdPicker(random, storage, "name"))
         );
         this.relationshipStrategies.add(
                 1.0,
@@ -159,8 +159,7 @@ public class SocialNetworkDefinition implements SchemaSpecificDefinition {
     }
 
     @Override
-    public RouletteWheel<RouletteWheel<TypeStrategy>> getDefinition() {
+    protected WeightedPicker<WeightedPicker<TypeStrategy>> getDefinition() {
         return this.metaTypeStrategies;
     }
-
 }

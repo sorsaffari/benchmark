@@ -16,32 +16,34 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package grakn.benchmark.profiler.generator.strategy;
+package grakn.benchmark.profiler.generator.pick;
 
 import java.util.NavigableMap;
 import java.util.Random;
 import java.util.TreeMap;
 
 /**
- * @param <T>
+ * Provides functionality to randomly choose from a weighted set of elements.
+ *
+ * @param <T> Type of elements in collection
  */
-public class RouletteWheel<T> implements PickableCollection {
-    private final NavigableMap<Double, T> map = new TreeMap<Double, T>();
+public class WeightedPicker<T> {
+    private final NavigableMap<Double, T> map = new TreeMap<>();
     private final Random random;
     private double total = 0;
 
-    public RouletteWheel(Random random) {
+    public WeightedPicker(Random random) {
         this.random = random;
     }
 
-    public RouletteWheel<T> add(double weight, T result) {
-        if (weight <= 0) return this;
+    public WeightedPicker<T> add(double weight, T element) {
+        if (weight <= 0) throw new IllegalArgumentException("Weight must be greater than zero.");
         total += weight;
-        map.put(total, result);
+        map.put(total, element);
         return this;
     }
 
-    public T next() {
+    public T sample() {
         double value = random.nextDouble() * total;
         return map.higherEntry(value).getValue();
     }

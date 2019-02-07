@@ -1,7 +1,7 @@
-package grakn.benchmark.profiler.generator.schemaspecific;
+package grakn.benchmark.profiler.generator.definition;
 
 import grakn.benchmark.profiler.generator.pick.CountingStreamGenerator;
-import grakn.benchmark.profiler.generator.pick.StreamProvider;
+import grakn.benchmark.profiler.generator.pick.StandardStreamProvider;
 import grakn.benchmark.profiler.generator.probdensity.FixedConstant;
 import grakn.benchmark.profiler.generator.probdensity.FixedDiscreteGaussian;
 import grakn.benchmark.profiler.generator.probdensity.ScalingDiscreteGaussian;
@@ -12,41 +12,41 @@ import grakn.benchmark.profiler.generator.strategy.AttributeStrategy;
 import grakn.benchmark.profiler.generator.strategy.EntityStrategy;
 import grakn.benchmark.profiler.generator.strategy.RelationshipStrategy;
 import grakn.benchmark.profiler.generator.strategy.RolePlayerTypeStrategy;
-import grakn.benchmark.profiler.generator.strategy.RouletteWheel;
+import grakn.benchmark.profiler.generator.pick.WeightedPicker;
 import grakn.benchmark.profiler.generator.strategy.TypeStrategy;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
 
-public class BiochemicalNetworkDefinition implements SchemaSpecificDefinition {
+public class BiochemicalNetworkDefinition extends DataGeneratorDefinition {
 
     private Random random;
     private ConceptStore storage;
 
-    private RouletteWheel<TypeStrategy> entityStrategies;
-    private RouletteWheel<TypeStrategy> relationshipStrategies;
-    private RouletteWheel<TypeStrategy> attributeStrategies;
-    private RouletteWheel<RouletteWheel<TypeStrategy>> operationStrategies;
+    private WeightedPicker<TypeStrategy> entityStrategies;
+    private WeightedPicker<TypeStrategy> relationshipStrategies;
+    private WeightedPicker<TypeStrategy> attributeStrategies;
+    private WeightedPicker<WeightedPicker<TypeStrategy>> metaTypeStrategies;
 
     public BiochemicalNetworkDefinition(Random random, ConceptStore storage) {
         this.random = random;
         this.storage = storage;
 
 
-        this.entityStrategies = new RouletteWheel<>(random);
-        this.relationshipStrategies = new RouletteWheel<>(random);
-        this.attributeStrategies = new RouletteWheel<>(random);
-        this.operationStrategies = new RouletteWheel<>(random);
+        this.entityStrategies = new WeightedPicker<>(random);
+        this.relationshipStrategies = new WeightedPicker<>(random);
+        this.attributeStrategies = new WeightedPicker<>(random);
+        this.metaTypeStrategies = new WeightedPicker<>(random);
 
         buildGenerator();
     }
 
     private void buildGenerator() {
         buildStrategies();
-        this.operationStrategies.add(1.0, entityStrategies);
-        this.operationStrategies.add(1.0, relationshipStrategies);
-        this.operationStrategies.add(1.0, attributeStrategies);
+        this.metaTypeStrategies.add(1.0, entityStrategies);
+        this.metaTypeStrategies.add(1.0, relationshipStrategies);
+        this.metaTypeStrategies.add(1.0, attributeStrategies);
     }
 
     private void buildStrategies() {
@@ -80,7 +80,7 @@ public class BiochemicalNetworkDefinition implements SchemaSpecificDefinition {
                 new AttributeStrategy<>(
                         "biochem-id",
                         new FixedDiscreteGaussian(this.random, 5, 3),
-                        new StreamProvider<>(idGenerator)
+                        new StandardStreamProvider<>(idGenerator)
                 )
         );
 
@@ -96,7 +96,7 @@ public class BiochemicalNetworkDefinition implements SchemaSpecificDefinition {
                 "interaction",
                 // high variance in the number of role players
                 new ScalingDiscreteGaussian(random, () -> storage.getGraphScale(), 0.01, 0.005),
-                new StreamProvider<>(
+                new StandardStreamProvider<>(
                         new FromIdStorageConceptIdPicker(
                                 random,
                                 this.storage,
@@ -108,7 +108,7 @@ public class BiochemicalNetworkDefinition implements SchemaSpecificDefinition {
                 "interaction",
                 // high variance in the number of role players
                 new ScalingDiscreteGaussian(random, () -> storage.getGraphScale(), 0.001, 0.001),
-                new StreamProvider<>(
+                new StandardStreamProvider<>(
                         new FromIdStorageConceptIdPicker(
                                 random,
                                 this.storage,
@@ -130,7 +130,7 @@ public class BiochemicalNetworkDefinition implements SchemaSpecificDefinition {
                 "@has-biochem-id-owner",
                 "@has-biochem-id",
                 new FixedConstant(1),
-                new StreamProvider<>(
+                new StandardStreamProvider<>(
                         new NotInRelationshipConceptIdPicker(
                                 random,
                                 storage,
@@ -142,7 +142,7 @@ public class BiochemicalNetworkDefinition implements SchemaSpecificDefinition {
                 "@has-biochem-id-value",
                 "@has-biochem-id",
                 new FixedConstant(1),
-                new StreamProvider<>(
+                new StandardStreamProvider<>(
                         new NotInRelationshipConceptIdPicker(
                                 random,
                                 storage,
@@ -165,7 +165,7 @@ public class BiochemicalNetworkDefinition implements SchemaSpecificDefinition {
                 "@has-biochem-id-owner",
                 "@has-biochem-id",
                 new FixedConstant(1),
-                new StreamProvider<>(
+                new StandardStreamProvider<>(
                         new NotInRelationshipConceptIdPicker(
                                 random,
                                 storage,
@@ -177,7 +177,7 @@ public class BiochemicalNetworkDefinition implements SchemaSpecificDefinition {
                 "@has-biochem-id-value",
                 "@has-biochem-id",
                 new FixedConstant(1),
-                new StreamProvider<>(
+                new StandardStreamProvider<>(
                         new NotInRelationshipConceptIdPicker(
                                 random,
                                 storage,
@@ -196,8 +196,7 @@ public class BiochemicalNetworkDefinition implements SchemaSpecificDefinition {
     }
 
     @Override
-    public RouletteWheel<RouletteWheel<TypeStrategy>> getDefinition() {
-        return this.operationStrategies;
+    protected WeightedPicker<WeightedPicker<TypeStrategy>> getDefinition() {
+        return this.metaTypeStrategies;
     }
-
 }

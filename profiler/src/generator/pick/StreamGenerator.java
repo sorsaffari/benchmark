@@ -16,11 +16,15 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package grakn.benchmark.profiler.generator.strategy;
+package grakn.benchmark.profiler.generator.pick;
+
+import java.util.stream.Stream;
 
 /**
  * @param <T>
  */
-public interface PickableCollection<T> {
-    T next();
+public interface StreamGenerator<T> {
+    Stream<T> getStream();
+    boolean checkAvailable(int requiredLength);
 }
+

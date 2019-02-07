@@ -18,26 +18,25 @@
 
 package grakn.benchmark.profiler.generator.strategy;
 
-import grakn.benchmark.profiler.generator.pick.StreamProviderInterface;
+import grakn.benchmark.profiler.generator.pick.PDFLimitedStreamProvider;
 import grakn.benchmark.profiler.generator.probdensity.ProbabilityDensityFunction;
 
 
 /**
  * @param <ValueDatatype>
  */
-public class AttributeStrategy<ValueDatatype> extends TypeStrategy implements HasPicker{
+public class AttributeStrategy<ValueDatatype> extends TypeStrategy {
 
-    private final StreamProviderInterface<ValueDatatype> valuePicker;
+    private final PDFLimitedStreamProvider<ValueDatatype> valuePicker;
 
     public AttributeStrategy(String attributeTypeLabel,
                              ProbabilityDensityFunction numInstancesPDF,
-                             StreamProviderInterface<ValueDatatype> valuePicker) {
+                             PDFLimitedStreamProvider<ValueDatatype> valuePicker) {
         super(attributeTypeLabel, numInstancesPDF);
         this.valuePicker = valuePicker;
     }
 
-    @Override
-    public StreamProviderInterface<ValueDatatype> getPicker() {
+    public PDFLimitedStreamProvider<ValueDatatype> getPicker() {
         return this.valuePicker;
     }
 }

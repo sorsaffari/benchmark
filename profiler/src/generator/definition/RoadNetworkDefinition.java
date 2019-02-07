@@ -1,7 +1,7 @@
-package grakn.benchmark.profiler.generator.schemaspecific;
+package grakn.benchmark.profiler.generator.definition;
 
 import grakn.benchmark.profiler.generator.pick.CentralStreamProvider;
-import grakn.benchmark.profiler.generator.pick.StreamProvider;
+import grakn.benchmark.profiler.generator.pick.StandardStreamProvider;
 import grakn.benchmark.profiler.generator.pick.StringStreamGenerator;
 import grakn.benchmark.profiler.generator.probdensity.FixedConstant;
 import grakn.benchmark.profiler.generator.probdensity.FixedUniform;
@@ -12,40 +12,40 @@ import grakn.benchmark.profiler.generator.strategy.AttributeStrategy;
 import grakn.benchmark.profiler.generator.strategy.EntityStrategy;
 import grakn.benchmark.profiler.generator.strategy.RelationshipStrategy;
 import grakn.benchmark.profiler.generator.strategy.RolePlayerTypeStrategy;
-import grakn.benchmark.profiler.generator.strategy.RouletteWheel;
+import grakn.benchmark.profiler.generator.pick.WeightedPicker;
 import grakn.benchmark.profiler.generator.strategy.TypeStrategy;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
 
-public class RoadNetworkDefinition implements SchemaSpecificDefinition {
+public class RoadNetworkDefinition extends DataGeneratorDefinition {
 
     private Random random;
     private ConceptStore storage;
 
-    private RouletteWheel<TypeStrategy> entityStrategies;
-    private RouletteWheel<TypeStrategy> relationshipStrategies;
-    private RouletteWheel<TypeStrategy> attributeStrategies;
-    private RouletteWheel<RouletteWheel<TypeStrategy>> operationStrategies;
+    private WeightedPicker<TypeStrategy> entityStrategies;
+    private WeightedPicker<TypeStrategy> relationshipStrategies;
+    private WeightedPicker<TypeStrategy> attributeStrategies;
+    private WeightedPicker<WeightedPicker<TypeStrategy>> metaTypeStrategies;
 
     public RoadNetworkDefinition(Random random, ConceptStore storage) {
         this.random = random;
         this.storage = storage;
 
-        this.entityStrategies = new RouletteWheel<>(random);
-        this.relationshipStrategies = new RouletteWheel<>(random);
-        this.attributeStrategies = new RouletteWheel<>(random);
-        this.operationStrategies = new RouletteWheel<>(random);
+        this.entityStrategies = new WeightedPicker<>(random);
+        this.relationshipStrategies = new WeightedPicker<>(random);
+        this.attributeStrategies = new WeightedPicker<>(random);
+        this.metaTypeStrategies = new WeightedPicker<>(random);
 
         buildGenerator();
     }
 
     private void buildGenerator() {
         buildStrategies();
-        this.operationStrategies.add(1.0, entityStrategies);
-        this.operationStrategies.add(1.25, relationshipStrategies);
-        this.operationStrategies.add(1.0, attributeStrategies);
+        this.metaTypeStrategies.add(1.0, entityStrategies);
+        this.metaTypeStrategies.add(1.25, relationshipStrategies);
+        this.metaTypeStrategies.add(1.0, attributeStrategies);
     }
 
     private void buildStrategies() {
@@ -73,7 +73,7 @@ public class RoadNetworkDefinition implements SchemaSpecificDefinition {
                 new AttributeStrategy<>(
                         "name",
                         new FixedUniform(this.random, 10, 30),
-                        new StreamProvider<>(nameStream)
+                        new StandardStreamProvider<>(nameStream)
                 )
         );
 
@@ -101,7 +101,7 @@ public class RoadNetworkDefinition implements SchemaSpecificDefinition {
                 "endpoint",
                 "intersection",
                 new FixedUniform(random, 1, 5), // choose 1-5 other role players for an intersection
-                new StreamProvider<>(
+                new StandardStreamProvider<>(
                         new FromIdStorageConceptIdPicker(random, storage, "road")
                 )
         );
@@ -121,7 +121,7 @@ public class RoadNetworkDefinition implements SchemaSpecificDefinition {
                 "@has-name-owner",
                 "@has-name",
                 new FixedConstant(1),
-                new StreamProvider<>(
+                new StandardStreamProvider<>(
                         new NotInRelationshipConceptIdPicker(
                                 random,
                                 storage,
@@ -158,8 +158,8 @@ public class RoadNetworkDefinition implements SchemaSpecificDefinition {
     }
 
     @Override
-    public RouletteWheel<RouletteWheel<TypeStrategy>> getDefinition() {
-        return this.operationStrategies;
+    protected WeightedPicker<WeightedPicker<TypeStrategy>> getDefinition() {
+        return this.metaTypeStrategies;
     }
 
 }

@@ -16,19 +16,16 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package grakn.benchmark.profiler.generator.concept;
+package grakn.benchmark.profiler.generator.query;
 
-import grakn.core.client.Grakn;
-import grakn.core.concept.ConceptId;
-import grakn.core.graql.InsertQuery;
-import grakn.core.graql.Pattern;
-import grakn.core.graql.Query;
-import grakn.core.graql.QueryBuilder;
-import grakn.core.graql.VarPattern;
-import grakn.core.graql.Var;
-import grakn.core.graql.Graql;
 import grakn.benchmark.profiler.generator.strategy.RelationshipStrategy;
 import grakn.benchmark.profiler.generator.strategy.RolePlayerTypeStrategy;
+import grakn.core.concept.ConceptId;
+import grakn.core.graql.Graql;
+import grakn.core.graql.InsertQuery;
+import grakn.core.graql.Pattern;
+import grakn.core.graql.Var;
+import grakn.core.graql.VarPattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,14 +39,16 @@ import static grakn.core.graql.internal.pattern.Patterns.var;
 /**
  *
  */
-public class RelationshipGenerator extends Generator<RelationshipStrategy> {
+public class RelationshipGenerator implements QueryGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(RelationshipGenerator.class);
+    private final RelationshipStrategy strategy;
 
     /**
      * @param strategy
      */
     public RelationshipGenerator(RelationshipStrategy strategy) {
-        super(strategy);
+
+        this.strategy = strategy;
     }
 
     /**

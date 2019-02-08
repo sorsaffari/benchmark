@@ -18,15 +18,13 @@
 
 package grakn.benchmark.profiler.generator.pick;
 
-import grakn.benchmark.profiler.generator.probdensity.ProbabilityDensityFunction;
-
 import java.util.stream.Stream;
 
 /**
  * @param <T>
  */
-public interface PDFLimitedStreamProvider<T> {
-        Stream<T> getStream(ProbabilityDensityFunction pdf);
+public interface LimitedStreamProvider<T> {
+        Stream<T> getStream(int length);
 
-        void reset();
+        void resetUniqueness();
 }

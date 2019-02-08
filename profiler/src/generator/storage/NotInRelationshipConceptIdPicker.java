@@ -2,37 +2,42 @@ package grakn.benchmark.profiler.generator.storage;
 
 import grakn.core.concept.ConceptId;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Stream;
 
-public class NotInRelationshipConceptIdPicker extends FromIdStoragePicker<ConceptId> {
+public class NotInRelationshipConceptIdPicker implements Iterator<ConceptId> {
 
     private String relationshipLabel;
     private String roleLabel;
+    private final Random rand;
+    private String typeLabel;
+    ConceptStorage conceptStorage;
 
     public NotInRelationshipConceptIdPicker(Random rand,
-                                            ConceptStore conceptStore,
+                                            ConceptStorage conceptStorage,
                                             String rolePlayerTypeLabel,
                                             String relationshipLabel,
                                             String roleLabel
-                                            ) {
-        super(rand, conceptStore, rolePlayerTypeLabel);
+    ) {
+        this.rand = rand;
         this.typeLabel = rolePlayerTypeLabel;
         this.relationshipLabel = relationshipLabel;
         this.roleLabel = roleLabel;
-
+        this.conceptStorage = conceptStorage;
     }
 
-    public Stream<ConceptId> getStream() {
-        Stream<Integer> randomUniqueOffsetStream = this.getStreamOfRandomOffsets();
-        List<String> notInRelationshipConceptIds = conceptStore.getIdsNotPlayingRole(typeLabel, relationshipLabel, roleLabel);
-        return randomUniqueOffsetStream.map(randomOffset -> ConceptId.of(notInRelationshipConceptIds.get(randomOffset)));
+
+    @Override
+    public boolean hasNext() {
+        return !conceptStorage.getIdsNotPlayingRole(typeLabel, relationshipLabel, roleLabel).isEmpty();
     }
 
     @Override
-    public Integer getConceptCount() {
-        return conceptStore.numIdsNotPlayingRole(typeLabel, relationshipLabel, roleLabel);
+    public ConceptId next() {
+        List<String> notInRelationshipConceptIds = conceptStorage.getIdsNotPlayingRole(typeLabel, relationshipLabel, roleLabel);
+        int randomOffset = rand.nextInt(notInRelationshipConceptIds.size());
+        return ConceptId.of(notInRelationshipConceptIds.get(randomOffset));
     }
 
 }

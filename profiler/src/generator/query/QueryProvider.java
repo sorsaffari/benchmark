@@ -7,7 +7,7 @@ import grakn.benchmark.profiler.generator.strategy.RelationshipStrategy;
 import grakn.benchmark.profiler.generator.strategy.TypeStrategy;
 import grakn.core.graql.InsertQuery;
 
-import java.util.stream.Stream;
+import java.util.Iterator;
 
 public class QueryProvider {
     private final DataGeneratorDefinition dataGeneratorDefinition;
@@ -17,7 +17,7 @@ public class QueryProvider {
 
     }
 
-    public Stream<InsertQuery> nextQueryBatch(){
+    public Iterator<InsertQuery> nextQueryBatch() {
         QueryGenerator queryGenerator;
         TypeStrategy typeStrategy = dataGeneratorDefinition.sampleNextStrategy();
 

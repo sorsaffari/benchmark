@@ -18,37 +18,28 @@
 
 package grakn.benchmark.profiler.generator.strategy;
 
-import grakn.benchmark.profiler.generator.pick.LimitedStreamProvider;
 import grakn.benchmark.profiler.generator.probdensity.ProbabilityDensityFunction;
 import grakn.core.concept.ConceptId;
 
-import java.util.stream.Stream;
+import java.util.Iterator;
 
 /**
- *
+ * A container for the three things required for how to generate a batch of role players:
+ * - The role label
+ * - A PDF that can be sampled to indicate how big the new batch of roles players is going to be
+ * - A provider of Concepts that is going to fill the role in the relationship
  */
 public class RolePlayerTypeStrategy extends TypeStrategy {
 
-    private final String roleLabel;
-    private LimitedStreamProvider<ConceptId> streamProvider;
+    private Iterator<ConceptId> conceptIdProvider;
 
-    public RolePlayerTypeStrategy(String roleLabel, String relationshipLabel, ProbabilityDensityFunction numInstancesPDF, LimitedStreamProvider<ConceptId> streamProvider) {
-        super(relationshipLabel, numInstancesPDF);
-        this.roleLabel = roleLabel;
-        this.streamProvider = streamProvider;
+    public RolePlayerTypeStrategy(String roleLabel, ProbabilityDensityFunction numInstancesPDF, Iterator<ConceptId> conceptIdProvider) {
+        super(roleLabel, numInstancesPDF);
+        this.conceptIdProvider = conceptIdProvider;
     }
 
-    public LimitedStreamProvider<ConceptId> getStreamProvider() {
-         return streamProvider;
+    public Iterator<ConceptId> getConceptProvider() {
+        return conceptIdProvider;
     }
-
-    public String getRoleLabel() {
-        return this.roleLabel;
-    }
-
-    public Stream<ConceptId> getConceptIds(){
-        return getStreamProvider().getStream(getNumInstancesPDF().sample());
-    }
-
 }
 

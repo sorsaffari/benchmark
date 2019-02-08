@@ -5,7 +5,7 @@ java_test(
     srcs = ["IgniteConceptStorageTest.java"],
 
     deps = [
-        "//profiler:benchmark-runner",
+        "//profiler:benchmark-profiler",
         "//dependencies/maven/artifacts/org/mockito:mockito-core",
         "//dependencies/maven/artifacts/grakn/core:grakn-graql",
         "//dependencies/maven/artifacts/org/apache/ignite:ignite-core",
@@ -16,10 +16,10 @@ java_test(
 
 java_test(
     name = "insertion-analysis-test",
-    test_class = "grakn.benchmark.runner.storage.InsertionAnalysisTest",
-    srcs = ["InsertionAnalysisTest.java"],
+    test_class = "grakn.benchmark.runner.storage.InsertQueryAnalyserTest",
+    srcs = ["InsertQueryAnalyserTest.java"],
     deps = [
-        "//profiler:benchmark-runner",
+        "//profiler:benchmark-profiler",
         "//dependencies/maven/artifacts/org/mockito:mockito-core",
         "//dependencies/maven/artifacts/grakn/core:grakn-graql",
         "//dependencies/maven/artifacts/org/hamcrest:hamcrest-all"

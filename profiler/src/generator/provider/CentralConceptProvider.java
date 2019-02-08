@@ -16,51 +16,48 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package grakn.benchmark.profiler.generator.pick;
+package grakn.benchmark.profiler.generator.provider;
 
 import grakn.benchmark.profiler.generator.probdensity.ProbabilityDensityFunction;
+import grakn.core.concept.ConceptId;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
- * This is a highly flexible StreamProvider. The idea of a _central_ stream is that one or several concepts
+ * The idea of a _central_ concept is that one or several concepts
  * will be the center of many relationships added (ie. imagine this as a _repeated concept provider_)
  * <p>
- * It can be specified with two PDFs:
- * The one used to construct specifies how many _central_ concepts will be provided. For example,
+ * It can be specified with a PDF that is used to construct how many _central_ concepts will be used. For example,
  * when adding multiple relationships, if the centralConceptsPdf specifies `1`, all relationships
- * will connect to that same Concept.
- * <p>
- * The second PDF specifies how many of these central items to withdraw in a stream this iteration.
- * The specific values are chosen from the list of central concepts as a circular buffer from the last
- * index that hasn't been used.
- *
- * @param <T>
+ * will connect to that same Concept in this iteration.
  */
-public class CentralStreamProvider<T> implements LimitedStreamProvider<T> {
-    private Iterator<T> iterator;
+public class CentralConceptProvider implements Iterator<ConceptId> {
+
+    private Iterator<ConceptId> iterator;
     private Boolean isReset;
-    private ArrayList<T> uniqueConceptIdsList;
+    private ArrayList<ConceptId> uniqueConceptIdsList;
     private int consumeFrom = 0;
     private ProbabilityDensityFunction centralConceptsPdf;
 
-    public CentralStreamProvider(ProbabilityDensityFunction centralConceptsPdf, Iterator<T> iterator) {
+    public CentralConceptProvider(ProbabilityDensityFunction centralConceptsPdf, Iterator<ConceptId> iterator) {
         this.iterator = iterator;
         this.isReset = true;
         this.uniqueConceptIdsList = new ArrayList<>();
         this.centralConceptsPdf = centralConceptsPdf;
     }
 
-    @Override
     public void resetUniqueness() {
         this.isReset = true;
     }
 
     @Override
-    public Stream<T> getStream(int streamLength) {
+    public boolean hasNext() {
+        return !uniqueConceptIdsList.isEmpty();
+    }
+
+    @Override
+    public ConceptId next() {
         // Get the same list as used previously, or generate one if not seen before
         // Only create a new stream if resetUniqueness() has been called prior
 
@@ -80,21 +77,10 @@ public class CentralStreamProvider<T> implements LimitedStreamProvider<T> {
             this.isReset = false;
         }
 
-        if (this.uniqueConceptIdsList.size() == 0) {
-            return Stream.empty();
-        } else {
-
-            // construct the circular buffer-reading stream
-
-            // number of items to read, which if longer than the length of the IDs list will wrap
-            int startIndex = consumeFrom;
-            int endIndex = startIndex + streamLength;
-            this.consumeFrom = (endIndex) % this.uniqueConceptIdsList.size();
-
-            // feed the uniqueConceptIdsList as a circular buffer
-            return IntStream.range(startIndex, endIndex)
-                    .mapToObj(index -> uniqueConceptIdsList.get(index % uniqueConceptIdsList.size()));
-        }
+        // construct the circular buffer-reading stream
+        ConceptId value = uniqueConceptIdsList.get(consumeFrom);
+        consumeFrom++;
+        return value;
     }
 }
 

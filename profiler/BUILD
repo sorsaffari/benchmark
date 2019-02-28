@@ -18,13 +18,23 @@
 
 exports_files(glob(["conf/**/*"]) + ["benchmark"] + ["setup.sh"], visibility = ["//visibility:public"])
 
+java_binary(
+    name = "benchmark-profiler-binary",
+    runtime_deps = [
+        ":benchmark-profiler"
+    ],
+    main_class = "grakn.benchmark.profiler.GraknBenchmark",
+    classpath_resources = [":logback"],
+    visibility = ["//visibility:public"]
+)
+
 java_library(
     name = "benchmark-profiler",
     srcs = glob(["src/*.java", "src/util/*.java"]),
     deps = [
         "//dependencies/maven/artifacts/grakn/core:client",
-        "//dependencies/maven/artifacts/grakn/core:grakn-graql",
-        "//dependencies/maven/artifacts/grakn/core:util",
+        "//dependencies/maven/artifacts/grakn/core:server",
+        "//dependencies/maven/artifacts/grakn/core:graql",
 
         "//dependencies/maven/artifacts/com/fasterxml/jackson/core:jackson-core",
         "//dependencies/maven/artifacts/com/fasterxml/jackson/core:jackson-databind",
@@ -42,7 +52,6 @@ java_library(
         "//dependencies/maven/artifacts/org/apache/ignite:ignite-core",
 
         "//profiler/src/generator:data-generator"
-
     ],
     runtime_deps = [
         "//dependencies/maven/artifacts/io/grpc:grpc-netty-shaded",

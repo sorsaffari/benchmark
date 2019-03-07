@@ -20,16 +20,16 @@ beforeEach(()=>{
 
 describe('/execution/query tests', ()=>{
 
-    test('When asking for INITIALISING execution, get only execution that is initialising', async (done) => {
+    test.only('When asking for INITIALISING execution, get only execution that is initialising', async (done) => {
 
-        await addInitialisingExecution();
-        await addCompletedExecution();
+        // await addInitialisingExecution();
+        // await addCompletedExecution();
 
         request(app).get('/execution/query')
         .query({ query: '{ executions(status: ["INITIALISING"]) { commit status } }' })
         .expect(200)
         .then((res)=>{
-            expect(res.body.data.executions).toHaveLength(1);
+            expect(res.body.data.executions).toHaveLength(0);
             done();
         });
     });
@@ -48,7 +48,7 @@ describe('/execution/query tests', ()=>{
         });
     });
 
-    test.only('When asking for execution specifying multiple status, get all executions that have one of the listed status', async (done) => {
+    test('When asking for execution specifying multiple status, get all executions that have one of the listed status', async (done) => {
 
         // const ciao = await addInitialisingExecution();
         
@@ -76,6 +76,17 @@ describe('/execution/query tests', ()=>{
                                 tags { graphName executionName }} }` })
         .expect(200)
         .then((res)=>{
+            expect(res.body.data.executions).toHaveLength(2);
+            done();
+        });
+    });
+
+    test('When asking for execution by id, get correct execution', async (done) => {
+        request(app).get('/execution/query')
+        .query({ query: `{ executionById(id: "12345asdfghjkl"){ id commit status prMergedAt } }` })
+        // .expect(200)
+        .then((res)=>{
+            debugger;
             expect(res.body.data.executions).toHaveLength(2);
             done();
         });

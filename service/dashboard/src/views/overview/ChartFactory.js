@@ -9,7 +9,9 @@ function mapToSerie(x, queriesMap) {
         value: Number(x.avgTime).toFixed(3),
         symbolSize: Math.min(x.stdDeviation / 10, 45) + 5,
         symbol: "circle",
-        stdDeviation: x.stdDeviation
+        stdDeviation: x.stdDeviation,
+        repetitions: x.repetitions,
+        executionId: x.executionId
       };
     }),
     smooth: true,
@@ -17,22 +19,20 @@ function mapToSerie(x, queriesMap) {
     showAllSymbol: true,
     tooltip: {
       formatter: args => {
-        return `avgTime: ${Number(args.data.value).toFixed(
-          3
-        )} ms <br> stdDeviation: ${Number(args.data.stdDeviation).toFixed(3)}`;
+        return `
+        query: ${args.seriesName}
+        <br> avgTime: ${Number(args.data.value).toFixed(3)} ms 
+        <br> stdDeviation: ${Number(args.data.stdDeviation).toFixed(3)} ms
+        <br> repetitions: ${args.data.repetitions}`;
       }
     }
   };
 }
 
-function createChart(htmlComponent, title, queriesTimes, queriesMap) {
-  const myChart = echarts.init(htmlComponent);
+function createChart(htmlComponent, queriesTimes, queriesMap) {
+  const overviewChart = echarts.init(htmlComponent);
   // specify chart configuration item and data
   const option = {
-    title: {
-      text: title,
-      subtext: "Grakn graph"
-    },
     tooltip: {
       show: true,
       trigger: "item"
@@ -60,7 +60,10 @@ function createChart(htmlComponent, title, queriesTimes, queriesMap) {
       {
         type: "category",
         boundaryGap: false,
-        data: queriesTimes[0].times.map(x => x.commit.substring(0, 15)),
+        data: queriesTimes[0].times.map(x => ({
+          value: x.commit.substring(0, 15),
+          commit: x.commit
+        })),
         triggerEvent: true
       }
     ],
@@ -76,13 +79,14 @@ function createChart(htmlComponent, title, queriesTimes, queriesMap) {
     dataZoom: [
       {
         type: "inside",
+        zoomOnMouseWheel: "ctrl",
         filterMode: "none",
         orient: "vertical"
       }
     ]
   };
-  myChart.setOption(option);
-  return myChart;
+  overviewChart.setOption(option);
+  return overviewChart;
 }
 
 export default { createChart };

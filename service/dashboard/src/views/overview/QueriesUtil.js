@@ -32,7 +32,7 @@ function buildQueriesMap(queries) {
  *                              ...
  *                           ]
  */
-function buildQueriesTimes(queries, spans, executions) {
+function buildQueriesTimes(queries, spans, executions, currentScale) {
   return queries.map(query => {
     // Find all the spans related to the current query
     const querySpans = spans.filter(span => span.tags.query === query);
@@ -40,37 +40,34 @@ function buildQueriesTimes(queries, spans, executions) {
     const times = executions.map(exec => {
       // Collect all the spans relative to this current commit and query
       const executionQuerySpans = querySpans.filter(
-        span => span.tags.executionName === exec.id
+        span =>
+          span.tags.executionName === exec.id && span.tags.scale == currentScale
       );
       // Compute average time combining all the repetitions
-      const avgTimeMicro =
-        executionQuerySpans.reduce((a, b) => a + b.duration, 0) /
-        executionQuerySpans.length;
-      const stdDeviation = stdDeviationFn(
-        executionQuerySpans.map(x => x.duration),
-        avgTimeMicro
-      );
-      if (stdDeviation > 60000) {
-        console.log(
-          "Numbers: " + executionQuerySpans.map(x => x.duration / 1000)
-        );
-        console.log("AvgTime: " + avgTimeMicro / 1000);
-        console.log("stdDeviation: " + Number(stdDeviation / 1000).toFixed(3));
-      }
+      const avgTime = computeAvgTime(executionQuerySpans);
+      const stdDeviation = computeStdDeviation(executionQuerySpans, avgTime);
+
       return {
         commit: exec.commit,
-        avgTime: avgTimeMicro / 1000,
-        stdDeviation: stdDeviation / 1000
+        avgTime: avgTime / 1000,
+        stdDeviation: stdDeviation / 1000,
+        repetitions: executionQuerySpans.length,
+        executionId: exec.id
       };
     });
     return { query, times };
   });
 }
-function stdDeviationFn(numbersArr, avgTime) {
-  let SDprep = 0;
-  for (const key in numbersArr)
-    SDprep += Math.pow(parseFloat(numbersArr[key]) - avgTime, 2);
-  return Math.sqrt(SDprep / numbersArr.length);
+
+function computeAvgTime(spans) {
+  return spans.reduce((a, b) => a + b.duration, 0) / spans.length;
+}
+
+function computeStdDeviation(spans, avgTime) {
+  const sum = spans
+    .map(span => Math.pow(span.duration - avgTime, 2))
+    .reduce((a, b) => a + b, 0);
+  return Math.sqrt(sum / spans.length);
 }
 
 export default {

@@ -1,6 +1,15 @@
 #!/bin/bash
 
-set -e #Exit immediately if any error occurs so that we dont invoke the /completed, which leads to deletion of current VM
+report_failure() {
+  curl --header "Content-Type: application/json" \
+    --request POST \
+    --data "{\"executionId\":\"$EXECUTION_ID\" }" \
+    http://$SERVICE_IP:4567/execution/failed
+
+  exit 1
+}
+
+trap report_failure ERR
 
 if [ $# -ne 5 ]
 then

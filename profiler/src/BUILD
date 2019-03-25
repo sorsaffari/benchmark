@@ -20,18 +20,14 @@ java_library(
     name = "benchmark-profiler",
     srcs = glob(["*.java", "util/*.java"]),
     deps = [
-        "//lib:lib",
-        "//profiler/src/analysis:insert-query-analyser",
-        "//profiler/src/generator:data-generator",
-
         "@graknlabs_client_java//:client-java",
         "@graknlabs_grakn_core//api:api",
         "@graknlabs_grakn_core//common:common",
         "@graknlabs_graql//java:graql",
         "@graknlabs_grakn_core//concept:concept",
 
-
-        # TODO should this be via grakn-core's deps?
+        # together these can be used to create clients with tracing enabled
+        "//lib:client-instrumentation",
         "//dependencies/maven/artifacts/io/grpc:grpc-core",
 
         "//dependencies/maven/artifacts/com/fasterxml/jackson/core:jackson-core",
@@ -49,6 +45,8 @@ java_library(
 
         "//dependencies/maven/artifacts/org/apache/ignite:ignite-core",
 
+        "//profiler/src/generator:data-generator",
+        "//profiler/src/analysis:insert-query-analyser"
     ],
     runtime_deps = [
         "//dependencies/maven/artifacts/io/grpc:grpc-netty-shaded",

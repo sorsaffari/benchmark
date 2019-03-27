@@ -16,6 +16,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+exports_files(["report_generator"], visibility = ["//visibility:public"])
+
 java_library(
     name = "report-generator",
     srcs = glob(["*.java", "container/*.java"]),
@@ -46,6 +48,12 @@ java_binary(
     runtime_deps = [
         "//report:report-generator",
     ],
-    classpath_resources = ["//profiler/test/resources:logback-test"],
+    classpath_resources = [":logback"],
+    visibility = ["//visibility:public"]
+)
+
+filegroup(
+    name = "logback",
+    srcs = ["//report:logback.xml"],
     visibility = ["//visibility:public"]
 )

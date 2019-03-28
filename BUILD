@@ -19,23 +19,14 @@
 exports_files(["VERSION", "deployment.properties"], visibility = ["//visibility:public"])
 
 # TODO: Need to add 'benchmark-dashboard' as a distribution.
-load("@graknlabs_bazel_distribution//distribution:rules.bzl", "distribution_structure", "distribution_zip")
+load("@graknlabs_bazel_distribution//common:rules.bzl", "assemble_zip")
 
 
-distribution_structure(
-    name="profiler-binary",
-#    targets = {
-#        "//profiler:benchmark-profiler-binary": "lib/"
-#    },
-    visibility = ["//:__pkg__"]
-)
-
-
-distribution_zip(
+assemble_zip(
     name = "profiler-distribution",
-    distribution_structures = [
-        "//:profiler-binary"
-    ],
+    targets = ["//profiler:profiler-deps"],
+    output_filename = "profiler",
+
     additional_files = {
         "//profiler:benchmark": "benchmark",
 
@@ -68,23 +59,14 @@ distribution_zip(
         "@external-dependencies-zipkin//file": "external-dependencies/zipkin.jar",
         "@external-dependencies-elasticsearch//file": "external-dependencies/elasticsearch.zip"
     },
-    output_filename = "benchmark",
+    visibility = ["//visibility:public"]
 )
 
 
-distribution_structure(
-    name = "report-generator-binary",
-    targets = {
-        "//report:report-generator-binary": "lib/"
-    },
-    visibility = ["//:__pkg__"]
-)
 
-distribution_zip(
+assemble_zip(
     name = "report-generator-distribution",
-    distribution_structures = [
-        "//:report-generator-binary"
-    ],
+    targets = ["//report:report-deps"],
     additional_files = {
         "//report:report_generator": "report_generator",
 
@@ -101,7 +83,10 @@ distribution_zip(
         "//common/configuration/scenario:complex/schema.gql" : "scenario/complex/schema.gql",
     },
     output_filename = "report-generator",
+    visibility = ["//visibility:public"]
+
 )
+
 
 
 # When a Bazel build or test is executed with RBE, it will be executed using the following platform.

@@ -46,7 +46,8 @@ public class ElasticSearchManager {
                     "    \"span\": { \n" +
                     "      \"_source\": {\"excludes\": [\"_q\"] },\n"+
                     "      \"properties\": {\n" +
-                    "        \"tags\": { \"enabled\": true }\n" +
+                    "        \"tags\": { \"enabled\": true },\n" +
+                    "        \"name\": { \"type\": \"keyword\" }\n" +
                     "}}}}";
 
     public static void putIndexTemplate(CommandLine arguments) throws IOException {

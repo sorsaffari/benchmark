@@ -1,83 +1,76 @@
 <template>
   <div>
-    <el-row class="currentRow" :class="{'bordered': !expand, 'highlighted': expand}">
-      <el-col :span="14" class="query-column" style="text-align: left;">
-        <i :class="{ 'el-icon-arrow-right': !expand, 'el-icon-arrow-down': expand }" @click="expandLine"/>
-        <div>{{ query }}</div>
+    <el-row class="currentRow">
+      <el-col :span="14" class="name-column" :style="styleObject">
+        <i :class="{ 'el-icon-circle-plus-outline': !expand, 'el-icon-remove-outline': expand }" @click="expandLine"/>
+        <div>{{ spans[0].name }}</div>
       </el-col>
       <el-col :span="3">
-        {{ min.duration | fixedMs }} ({{ min.tags.repetition + 1 }})
+        {{ min.duration | fixedMs }} ({{ min.repetition + 1 }})
       </el-col>
       <el-col :span="3">
         {{ med | fixedMs }}
       </el-col>
       <el-col :span="3">
-        {{ max.duration | fixedMs }} ({{ max.tags.repetition + 1 }})
+        {{ max.duration | fixedMs }} ({{ max.repetition + 1 }})
       </el-col>
       <el-col :span="1">
         {{ reps }}
       </el-col>
     </el-row>
-    <el-row v-if="expand" :class="{'bordered': expand}">
+    <el-row v-if="expand">
       <step-line
-        v-for="stepNumber in stepNumbers"
-        :key="stepNumber"
-        :spans="filterSpansByStep(stepNumber)"
-        padding="15"
+        v-for="stepName in stepNames"
+        :key="stepName"
+        :spans="filterSpansByStep(stepName)"
+        :padding="parseInt(padding)+10"
       />
     </el-row>
   </div>
 </template>
 <style scoped>
-.currentRow {
-  margin: 5px 0px;
-  padding: 5px;
-  font-weight: 300;
-}
-.bordered{
-  border-bottom: 1px solid #ebeef5;
-}
-.highlighted{
-  font-weight: 400;
+.currentRow{
+  margin: 3px 0px;
+  padding: 3px;
 }
 .currentRow:hover {
-  background-color: #fcdaba;
+  background-color: #fd9789;
 }
-.query-column{
+.name-column{
   display: flex;
   justify-content: start;
-}
-.el-col{
-  text-align: center;
 }
 i {
   cursor: pointer;
   margin-right: 5px;
 }
+.el-col{
+    text-align: center;
+}
 </style>
 
 <script>
 import BenchmarkClient from '@/util/BenchmarkClient';
-import StepLine from './StepLine.vue';
 
 export default {
-  name: 'QueryLine',
-  components: { StepLine },
+  name: 'StepLine',
   filters: {
     fixedMs(num) {
       return `${Number(num / 1000).toFixed(3)} ms`;
     },
   },
-  props: ['query', 'spans', 'isOverviewQuery'],
+  props: ['spans', 'padding'],
   data() {
     return {
       expand: false,
-      children: [],
-      stepNumbers: null,
+      children: null,
+      stepNames: null,
+      styleObject: {
+        'padding-left': `${this.padding}px`,
+        'text-align': 'left',
+        'font-style': 'italic',
+      },
     };
-  },
-  created() {
-    if (this.isOverviewQuery) this.expandLine();
   },
   computed: {
     min() {
@@ -121,23 +114,30 @@ export default {
       BenchmarkClient.getSpans(
         `{ childrenSpans( parentId: [${
           this.spans.map(span => `"${span.id}"`).join()
-        }] limit: 500){ id name duration parentId tags { childNumber }} }`,
+        }]){ id name duration parentId timestamp tags { childNumber }} }`,
       ).then((resp) => {
         this.children = this.attachRepetition(resp.data.childrenSpans);
-        this.stepNumbers = Array.from(new Set(this.children.map(child => child.tags.childNumber)));
-        this.stepNumbers.sort();
+        this.stepNames = sortStepNames(this.children);
       });
-    },
-    filterSpansByStep(stepNumber) {
-      return this.children.filter(child => child.tags.childNumber === stepNumber);
     },
     attachRepetition(childrenSpans) {
       // Children spans don't have the tags repetition and repetitions, so we attach them here taking the values from parent
       return childrenSpans.map((span) => {
-        const parentTag = this.spans.filter(parent => parent.id === span.parentId)[0].tags;
-        return Object.assign({ repetition: parentTag.repetition, repetitions: parentTag.repetitions }, span);
+        const parentSpan = this.spans.filter(parent => parent.id === span.parentId)[0];
+        return Object.assign({ repetition: parentSpan.repetition, repetitions: parentSpan.repetitions }, span);
       });
+    },
+    filterSpansByStep(stepName) {
+      return this.children.filter(child => child.name === stepName);
     },
   },
 };
+
+function sortStepNames(children) {
+  const { parentId } = children[0];
+  return children
+    .filter(c => c.parentId === parentId)
+    .sort((a, b) => a.timestamp > b.timestamp)
+    .map(child => child.name);
+}
 </script>

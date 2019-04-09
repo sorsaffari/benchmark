@@ -1,11 +1,12 @@
 <template>
   <div id="app">
-    <router-view />
+    <router-view/>
   </div>
 </template>
+
 <script>
 export default {
-  name: 'App',
+  name: "App"
 };
 </script>
 
@@ -15,21 +16,45 @@ export default {
   height: 100vh;
 }
 
+.el-tooltip__popper,
+.el-message-box {
+  font-family: "Roboto", sans-serif;
+}
+
 /*--- CSS RESET ---*/
 
-html,body,div,span,
-h1,h2,h3,h4,h5,h6,
-p,pre,a,img,
-small,strong,
-u,i,ul,
-li,label,
-legend,table,
-caption,tbody,
-tfoot,thead,
-tr,th,td,
+html,
+body,
+div,
+span,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+pre,
+a,
+img,
+small,
+strong,
+u,
+i,
+ul,
+li,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
 aside,
-canvas,
- {
+canvas {
   margin: 0;
   padding: 0;
   border: 0;
@@ -37,8 +62,13 @@ canvas,
   font-family: "Roboto", sans-serif;
 }
 /* HTML5 display-role reset for older browsers */
-figure,footer,header,
-hgroup,menu,nav,section {
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section {
   display: block;
 }
 html,

@@ -213,9 +213,17 @@ async function fetchQuerySpans(executionSpans) {
   return responses.reduce((acc, resp) => acc.concat(resp), []);
 }
 </script>
-<style scoped>
+<style lang="scss" scoped>
 .echarts {
   width: 100%;
   height: 500px;
+}
+
+.panel {
+  margin-bottom: 20px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 </style>

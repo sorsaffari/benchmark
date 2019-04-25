@@ -5,7 +5,7 @@
         :key="graphType"
         class="panel"
       >
-        <overview-commits-chart
+        <chart
           :name="graphType"
           :executions="completedExecutions"
           :executionSpans="filterSpans(graphType)"
@@ -16,11 +16,11 @@
 
 <script>
 import BenchmarkClient from '@/util/BenchmarkClient';
-import OverviewCommitsChart from './Chart.vue';
+import Chart from './Chart.vue';
 
 export default {
   name: 'OverviewPage',
-  components: { OverviewCommitsChart },
+  components: { Chart },
   data() {
     return {
       numberOfCompletedExecutions: 8,
@@ -48,16 +48,13 @@ export default {
 };
 </script>
 
-<style scoped>
-.overview-section {
-  overflow: scroll;
-}
-.el-main {
-  padding: 20px 50px;
-}
-.el-container {
-}
+<style lang="scss" scoped>
+@import "./src/assets/css/variables.scss";
 .panel {
-  margin-bottom: 20px;
+  margin-bottom: $margin-default;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 </style>

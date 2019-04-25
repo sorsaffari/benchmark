@@ -23,6 +23,7 @@ export default {
   components: { Chart },
   data() {
     return {
+      pageTitle: "Benchmark Overview",
       numberOfCompletedExecutions: 8,
       completedExecutions: null,
       graphTypes: [],
@@ -30,6 +31,7 @@ export default {
     };
   },
   async created() {
+    this.$store.commit('setPageTitle', this.pageTitle);
     // Get the last N completed executions
     // Note: we need to reverse the array because in the chart we want to show the most recent execution not as first but as last (rightmost)
     this.completedExecutions = (await BenchmarkClient.getLatestCompletedExecutions(

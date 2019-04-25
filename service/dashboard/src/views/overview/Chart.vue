@@ -73,8 +73,6 @@ export default {
         x => this.legendsMap[x] === args.seriesName
       )[0];
 
-      console.log(currentQuery)
-
       this.$store.commit('setInspectCurrentGraph', this.name);
       this.$store.commit('setInspectCurrentScale', this.currentScale);
       this.$store.commit('setInspectCurrentQuery', currentQuery);
@@ -213,17 +211,10 @@ async function fetchQuerySpans(executionSpans) {
   return responses.reduce((acc, resp) => acc.concat(resp), []);
 }
 </script>
+
 <style lang="scss" scoped>
 .echarts {
   width: 100%;
   height: 500px;
-}
-
-.panel {
-  margin-bottom: 20px;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
 }
 </style>

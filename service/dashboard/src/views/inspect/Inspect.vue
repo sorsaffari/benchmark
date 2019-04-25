@@ -54,7 +54,6 @@
 
 <script>
 // import InspectStore from '@/util/InspectSharedStore';
-import { store } from '@/store';
 import BenchmarkClient from '@/util/BenchmarkClient';
 import TabularView from './TabularView/TabularView.vue';
 
@@ -69,9 +68,9 @@ export default {
   data() {
     return {
       executionId: this.$route.params.executionId,
-      currentGraph: store.getters.inspectCurrentGraph, // used when coming from Overview page to investigate a particularly slow query
-      currentScale: store.getters.inspectCurrentScale, // used when coming from Overview page to investigate a particularly slow query
-      currentQuery: store.getters.inspectCurrentQuery, // used when coming from Overview page to investigate a particularly slow query
+      currentGraph: this.$store.getters.inspectCurrentGraph, // used when coming from Overview page to investigate a particularly slow query
+      currentScale: this.$store.getters.inspectCurrentScale, // used when coming from Overview page to investigate a particularly slow query
+      currentQuery: this.$store.getters.inspectCurrentQuery, // used when coming from Overview page to investigate a particularly slow query
       execution: {},
       executionSpans: [],
       graphs: [],

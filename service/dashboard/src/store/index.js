@@ -7,13 +7,28 @@ Vue.use(Vuex);
 export const store = new Vuex.Store({
   state: {
     pageTitle: '',
+    inspectCurrentGraph: '',
+    inspectCurrentScale: 0,
+    inspectCurrentQuery: '',
   },
   mutations: {
     setPageTitle(state, pageTitle) {
       state.pageTitle = pageTitle;
     },
+    setInspectCurrentGraph(state, inspectCurrentGraph) {
+      state.inspectCurrentGraph = inspectCurrentGraph;
+    },
+    setInspectCurrentScale(state, inspectCurrentScale) {
+      state.inspectCurrentScale = inspectCurrentScale;
+    },
+    setInspectCurrentQuery(state, inspectCurrentQuery) {
+      state.inspectCurrentQuery = inspectCurrentQuery;
+    },
   },
   getters: {
     pageTitle: state => state.pageTitle,
+    inspectCurrentGraph: state => state.inspectCurrentGraph,
+    inspectCurrentScale: state => state.inspectCurrentScale,
+    inspectCurrentQuery: state => state.inspectCurrentQuery,
   },
 });

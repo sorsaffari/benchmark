@@ -16,14 +16,13 @@
 
 <script>
 import BenchmarkClient from '@/util/BenchmarkClient';
-import OverviewCommitsChart from './OverviewCommitsChart.vue';
+import OverviewCommitsChart from './ChartCommits.vue';
 
 export default {
   name: 'OverviewPage',
   components: { OverviewCommitsChart },
   data() {
     return {
-      pageTitle: 'Benchmark Overview',
       numberOfCompletedExecutions: 8,
       completedExecutions: null,
       graphTypes: [],
@@ -31,7 +30,6 @@ export default {
     };
   },
   async created() {
-    this.$store.commit('setPageTitle', this.pageTitle);
     // Get the last N completed executions
     // Note: we need to reverse the array because in the chart we want to show the most recent execution not as first but as last (rightmost)
     this.completedExecutions = (await BenchmarkClient.getLatestCompletedExecutions(
@@ -40,7 +38,7 @@ export default {
     // Get all the execution spans relative to those executions
     this.executionSpans = await BenchmarkClient.getExecutionsSpans(this.completedExecutions);
     // Compute graph names from spans, for each graph name we draw a chart
-    this.graphTypes = [...new Set(["financial"])];
+    this.graphTypes = [...new Set(this.executionSpans.map(span => span.tags.graphType))];
   },
   methods: {
     filterSpans(name) {
@@ -49,6 +47,7 @@ export default {
   },
 };
 </script>
+
 <style scoped>
 .overview-section {
   overflow: scroll;

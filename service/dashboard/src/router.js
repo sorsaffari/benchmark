@@ -14,7 +14,7 @@ export default new Router({
       children: [
         {
           path: 'overview',
-          component: () => import(/* webpackChunkName: "overview" */ './views/overview/Overview.vue'),
+          component: () => import(/* webpackChunkName: "overview" */ './views/overview'),
         },
         {
           path: 'executions',

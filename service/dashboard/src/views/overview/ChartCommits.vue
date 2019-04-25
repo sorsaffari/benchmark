@@ -17,9 +17,7 @@
         </el-dropdown-menu>
       </el-dropdown>
     </div>
-    <!--<div ref="chart" class="chart-wrapper"/>-->
-    <!--<commit-chart :dataAndSeries="dataAndSeries" :legends="legends"/>-->
-    <e-chart :options="chartOoptions"/>
+    <e-chart :autoresize="true" :options="chartOoptions" @click="redirectToInspect"/>
   </el-card>
 </template>
 
@@ -31,26 +29,17 @@ import "echarts/lib/component/legend";
 import "echarts/lib/component/legendScroll";
 
 import BenchmarkClient from "@/util/BenchmarkClient";
-// import InspectStore from "@/util/InspectSharedStore";
-// import ChartFactory from "./ChartFactory";
+import InspectStore from "@/util/InspectSharedStore";
 import QueriesUtil from "./QueriesUtil";
-import CommitChart from "./CommitChart";
 
 export default {
   props: ["name", "executions", "executionSpans"],
   components: { EChart },
   data() {
     return {
-      // dataAndSeries: [],
-      // legends: [],
       scales: null,
       currentScale: null,
-      // queries: null,
-      // queriesLegend: null,
-      // chart: null,
-      xData: [],
-      series: [],
-      legends: [],
+      legendsMap: [],
       chartOoptions: {}
     };
   },
@@ -69,10 +58,6 @@ export default {
     }
   },
   async created() {
-    // window.onresize = () => {
-    //   this.chart.resize();
-    // };
-
     this.scales = [
       ...new Set(this.executionSpans.map(span => span.tags.graphScale))
     ].sort((a, b) => a - b);
@@ -80,21 +65,24 @@ export default {
 
     this.$nextTick(() => {
       this.drawChart();
-      // this.chart.on("click", args => this.redirectToInspect(args));
     });
   },
   methods: {
-    // redirectToInspect(args) {
-    //   const currentQuery = Object.keys(this.queriesLegend).filter(
-    //     x => this.queriesLegend[x] === args.seriesName
-    //   )[0];
-    //   InspectStore.setGraph(this.name);
-    //   InspectStore.setScale(this.currentScale);
-    //   InspectStore.setQuery(currentQuery);
-    //   this.$router.push({
-    //     path: `inspect/${args.data.executionId}`
-    //   });
-    // },
+    redirectToInspect(args) {
+      const currentQuery = Object.keys(this.legendsMap).filter(
+        x => this.legendsMap[x] === args.seriesName
+      )[0];
+
+      console.log(currentQuery)
+
+      this.$store.commit('setInspectCurrentGraph', this.name);
+      this.$store.commit('setInspectCurrentScale', this.currentScale);
+      this.$store.commit('setInspectCurrentQuery', currentQuery);
+
+      this.$router.push({
+        path: `inspect/${args.data.executionId}`
+      });
+    },
     async drawChart() {
       // Compute array of unique queries that have been executed on this graph
       const querySpans = await fetchQuerySpans(this.executionSpans);
@@ -107,8 +95,10 @@ export default {
         this.currentScale
       );
 
-      this.series = dataAndSeries.map(data => ({
-        name: this.legends[data.query],
+      this.legendsMap = QueriesUtil.buildQueriesMap(queries);
+
+      const series = dataAndSeries.map(data => ({
+        name: this.legendsMap[data.query],
         type: "line",
         data: data.times.map(x => ({
           value: Number(x.avgTime).toFixed(3),
@@ -132,12 +122,10 @@ export default {
         }
       }));
 
-      this.xData = dataAndSeries[0].times.map(x => ({
+      const xData = dataAndSeries[0].times.map(x => ({
         value: x.commit.substring(0, 15),
         commit: x.commit
       }));
-
-      this.legends = Object.values(QueriesUtil.buildQueriesMap(queries)).sort();
 
       this.chartOoptions = {
         tooltip: {
@@ -150,7 +138,7 @@ export default {
           left: 10,
           // top: 20,
           bottom: 0,
-          data: this.legends,
+          data: Object.values(this.legendsMap).sort(),
           tooltip: {
             show: true,
             showDelay: 500,
@@ -164,7 +152,7 @@ export default {
           {
             type: "category",
             boundaryGap: false,
-            data: this.xData,
+            data: xData,
             triggerEvent: true
           }
         ],
@@ -176,7 +164,7 @@ export default {
             }
           }
         ],
-        series: this.series,
+        series: series,
         dataZoom: [
           {
             type: "inside",
@@ -226,7 +214,8 @@ async function fetchQuerySpans(executionSpans) {
 }
 </script>
 <style scoped>
-.chart-wrapper {
+.echarts {
+  width: 100%;
   height: 500px;
 }
 </style>

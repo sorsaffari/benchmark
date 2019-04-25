@@ -38,8 +38,8 @@ function computeStdDeviation(spans, avgTime) {
 /**
  * queriesTime structure => [
  *                             {
- *                              query: "",
- *                              times: [ { commit: "", avgTime: "" }, ... ]
+ *                                query: "",
+ *                                times: [ { commit: "", avgTime: "" }, ... ]
  *                              },
  *                              ...
  *                           ]

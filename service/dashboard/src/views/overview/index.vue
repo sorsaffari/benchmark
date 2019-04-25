@@ -16,7 +16,7 @@
 
 <script>
 import BenchmarkClient from '@/util/BenchmarkClient';
-import OverviewCommitsChart from './ChartCommits.vue';
+import OverviewCommitsChart from './Chart.vue';
 
 export default {
   name: 'OverviewPage',

@@ -49,7 +49,7 @@ export default {
   methods: {
     deleteExecution(execution) {
       this.$confirm("Are you sure you want to delete this execution?")
-        .then(_ => {
+        .then(() => {
           BenchmarkClient.deleteExecution(execution)
             .then(() => {
               console.log('execution deleted.');
@@ -60,11 +60,10 @@ export default {
               this.$message({ showClose: true, message: 'Deleting the execution failed. Check the console logs to find out why.', type: 'error' });
             } );
         })
-        .catch(_ => {});
     },
     stopExecution(execution) {
       this.$confirm("Are you sure you want to stop this execution?")
-        .then(_ => {
+        .then(() => {
           BenchmarkClient.stopExecution(execution)
             .then(() => {
               console.log('execution stopped.');
@@ -75,7 +74,6 @@ export default {
               this.$message({ showClose: true, message: 'Stoping the execution failed. Check the console logs to find out why.', type: 'error' });
             })
         })
-        .catch(_ => {});
     },
     copyStringToClipboard(vmName) {
       copy(`gcloud compute ssh ubuntu@${vmName} --zone=us-east1-b`);

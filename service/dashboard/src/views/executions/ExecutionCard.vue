@@ -101,11 +101,6 @@ export default {
   position: absolute;
   right: 0;
   text-align: right;
-
-  .el-dropdown-link {
-    cursor: pointer;
-    color: $color-default-link;
-  }
 }
 
 .status {

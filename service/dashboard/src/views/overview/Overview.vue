@@ -1,7 +1,5 @@
 <template>
   <el-container class="is-vertical overview-section">
-    <el-main>
-      <h2>Benchmark Overview</h2>
       <el-row
         v-for="graphType in graphTypes"
         :key="graphType"
@@ -13,7 +11,6 @@
           :executionSpans="filterSpans(graphType)"
         />
       </el-row>
-    </el-main>
   </el-container>
 </template>
 
@@ -26,6 +23,7 @@ export default {
   components: { OverviewCommitsChart },
   data() {
     return {
+      pageTitle: 'Benchmark Overview',
       numberOfCompletedExecutions: 8,
       completedExecutions: null,
       graphTypes: [],
@@ -33,6 +31,7 @@ export default {
     };
   },
   async created() {
+    this.$store.commit('setPageTitle', this.pageTitle);
     // Get the last N completed executions
     // Note: we need to reverse the array because in the chart we want to show the most recent execution not as first but as last (rightmost)
     this.completedExecutions = (await BenchmarkClient.getLatestCompletedExecutions(
@@ -41,7 +40,7 @@ export default {
     // Get all the execution spans relative to those executions
     this.executionSpans = await BenchmarkClient.getExecutionsSpans(this.completedExecutions);
     // Compute graph names from spans, for each graph name we draw a chart
-    this.graphTypes = [...new Set(this.executionSpans.map(span => span.tags.graphType))];
+    this.graphTypes = [...new Set(["financial"])];
   },
   methods: {
     filterSpans(name) {
@@ -58,13 +57,8 @@ export default {
   padding: 20px 50px;
 }
 .el-container {
-  background-color: #f4f3ef;
 }
 .panel {
-  background-color: white;
-  margin-bottom: 20px;
-}
-h2 {
   margin-bottom: 20px;
 }
 </style>

@@ -13,6 +13,7 @@ export default {
 <style lang="scss">
 @import "./src/assets/css/reset.scss";
 @import "./src/assets/css/base.scss";
+@import "./src/assets/css/overrides.scss";
 
 #app {
   font-family: "Roboto", sans-serif;

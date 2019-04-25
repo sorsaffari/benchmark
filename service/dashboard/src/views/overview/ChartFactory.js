@@ -26,6 +26,10 @@ function mapToSerie(queryTimes, queriesMap) {
 }
 
 function createChart(htmlComponent, queriesTimes, queriesMap) {
+  console.log("queriesTimes", queriesTimes);
+  console.log("queriesMap", queriesMap);
+
+
   const overviewChart = echarts.init(htmlComponent);
   // specify chart configuration item and data
   const option = {
@@ -35,10 +39,10 @@ function createChart(htmlComponent, queriesTimes, queriesMap) {
     },
     legend: {
       type: 'scroll',
-      orient: 'vertical',
-      right: 10,
-      top: 20,
-      bottom: 20,
+      orient: 'horizontal',
+      left: 10,
+      // top: 20,
+      bottom: 0,
       data: Object.values(queriesMap).sort(),
       tooltip: {
         show: true,
@@ -78,6 +82,12 @@ function createChart(htmlComponent, queriesTimes, queriesMap) {
         orient: 'vertical',
       },
     ],
+    grid: {
+      left: 70,
+      top: 20,
+      right: 70,
+      bottom: 70
+    }
   };
   overviewChart.setOption(option);
   return overviewChart;

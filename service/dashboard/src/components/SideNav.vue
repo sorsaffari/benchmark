@@ -34,6 +34,7 @@ export default {
 
 .el-aside {
   background-color: $color-default-bg;
+  width: $width-sideNav !important;
 }
 
 .logo {

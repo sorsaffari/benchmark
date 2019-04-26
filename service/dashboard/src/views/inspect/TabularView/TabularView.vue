@@ -11,40 +11,40 @@
   </el-tabs>
 </template>
 <script>
-import GraphTab from './GraphTab.vue';
+import GraphTab from './GraphTab.vue'
 
 export default {
   name: 'TabularView',
   components: { GraphTab },
   props: ['graphs', 'executionSpans', 'currentGraph', 'currentQuery', 'currentScale'],
-  data() {
+  data () {
     return {
-      activeGraph: '0',
-    };
+      activeGraph: '0'
+    }
   },
   watch: {
-    graphs(values) {
+    graphs (values) {
       // Once the graphs are available check if we need to select Graph tab based on the
       // currentGraph parameter that comes from the Ovierview page.
       if (this.currentGraph) {
-        this.activeGraph = values.indexOf(this.currentGraph).toString();
+        this.activeGraph = values.indexOf(this.currentGraph).toString()
       }
-    },
+    }
   },
   methods: {
-    filterSpans(name) {
-      return this.executionSpans.filter(span => span.tags.graphType === name);
+    filterSpans (name) {
+      return this.executionSpans.filter(span => span.tags.graphType === name)
     },
-    getOverviewScale(graphType) {
-      if (this.currentGraph === graphType) { return this.currentScale; }
-      return null;
+    getOverviewScale (graphType) {
+      if (this.currentGraph === graphType) { return this.currentScale }
+      return null
     },
-    getOverviewQuery(graphType) {
-      if (this.currentGraph === graphType) { return this.currentQuery; }
-      return null;
-    },
-  },
-};
+    getOverviewQuery (graphType) {
+      if (this.currentGraph === graphType) { return this.currentQuery }
+      return null
+    }
+  }
+}
 </script>
 <style scoped>
 .wrapper {

@@ -17,24 +17,24 @@
 </template>
 <script>
 
-import ScaleSelector from '@/components/ScaleSelector.vue';
-import QueriesTable from './QueriesTable.vue';
+import QueriesTable from './QueriesTable.vue'
+import ScaleSelector from '@/components/ScaleSelector.vue'
 
 export default {
   name: 'GraphTab',
   components: { ScaleSelector, QueriesTable },
   props: ['graph', 'executionSpans', 'overviewScale', 'overviewQuery'],
-  data() {
+  data () {
     return {
       scales: [],
-      currentScale: null,
-    };
+      currentScale: null
+    }
   },
-  created() {
-    this.scales = [...new Set(this.executionSpans.map(span => span.tags.graphScale))];
-    this.scales.sort((a, b) => a - b);
-    this.currentScale = (this.overviewScale) ? this.overviewScale : this.scales[0];
-  },
-};
+  created () {
+    this.scales = [...new Set(this.executionSpans.map(span => span.tags.graphScale))]
+    this.scales.sort((a, b) => a - b)
+    this.currentScale = (this.overviewScale) ? this.overviewScale : this.scales[0]
+  }
+}
 
 </script>

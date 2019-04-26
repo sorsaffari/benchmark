@@ -22,11 +22,11 @@
 
 <script>
 export default {
-  data() {
-    return {};
+  data () {
+    return {}
   },
   methods: {}
-};
+}
 </script>
 
 <style scoped lang="scss">

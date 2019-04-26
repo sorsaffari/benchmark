@@ -1,9 +1,9 @@
 <template>
   <el-container style="height: 100%;">
-    <side-nav/>
+    <the-side-nav/>
 
     <el-container class="is-vertical">
-      <top-bar/>
+      <the-top-bar/>
 
       <el-main>
         <router-view/>
@@ -14,13 +14,13 @@
 
 <script>
 // @ is an alias to /src
-import SideNav from "@/components/SideNav.vue";
-import TopBar from "@/components/TopBar.vue";
+import TheSideNav from '@/components/TheSideNav.vue'
+import TheTopBar from '@/components/TheTopBar.vue'
 
 export default {
-  name: "Home",
-  components: { SideNav, TopBar }
-};
+  name: 'Home',
+  components: { TheSideNav, TheTopBar }
+}
 </script>
 
 <style>

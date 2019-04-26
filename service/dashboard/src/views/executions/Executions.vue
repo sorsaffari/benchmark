@@ -1,6 +1,6 @@
 <template>
   <section v-loading="loading" class="el-container is-vertical page-container">
-      <!-- <el-row>
+    <!-- <el-row>
         <el-popover
           v-model="popoverVisible"
           placement="right-start"
@@ -39,20 +39,19 @@
           />
         </el-popover>
         <el-button type="success" circle icon="el-icon-plus"></el-button>
-      </el-row>-->
-      <execution-card v-for="exec in executions" :key="exec.id" :execution="exec"/>
+    </el-row>-->
+    <execution-card v-for="exec in executions" :key="exec.id" :execution="exec"/>
   </section>
 </template>
 
 <script>
-import ExecutionCard from "./ExecutionCard.vue";
-import BenchmarkClient from "@/util/BenchmarkClient";
-import { Loading } from 'element-ui';
+import ExecutionCard from './ExecutionCard.vue'
+import BenchmarkClient from '@/util/BenchmarkClient'
 
 export default {
-  name: "ExecutionsPage",
+  name: 'ExecutionsPage',
   components: { ExecutionCard },
-  data() {
+  data () {
     return {
       pageTitle: 'Benchmark Executions',
       loading: true,
@@ -62,29 +61,16 @@ export default {
         commit: undefined,
         repoUrl: undefined
       }
-    };
+    }
   },
-  created() {
-    this.$store.commit('setPageTitle', this.pageTitle);
+  created () {
+    this.$store.commit('setPageTitle', { pageTitle: this.pageTitle })
     BenchmarkClient.getExecutions(
-	  `{ executions
-	  		{
-          		id
-          		prMergedAt
-          		prNumber
-          		prUrl
-          		commit
-          		status
-          		executionInitialisedAt
-          		executionStartedAt
-          		executionCompletedAt
-			  	vmName
-			  }
-		  }`
-    ).then(execs => {
-      this.executions = execs.data.executions;
-      this.loading = false;
-    });
+      `{ executions { id prMergedAt prNumber prUrl commit status executionInitialisedAt executionStartedAt executionCompletedAt vmName } }`
+    ).then((execs) => {
+      this.executions = execs.data.executions
+      this.loading = false
+    })
   },
   methods: {
     // triggerExecution() {
@@ -105,11 +91,10 @@ export default {
     //   this.newExecution.commit = undefined;
     // }
   }
-};
+}
 </script>
 
 <style scoped>
-
 section {
   min-height: 100%;
 }

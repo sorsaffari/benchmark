@@ -1,34 +1,98 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
+import Vue from 'vue'
+import Vuex from 'vuex'
+import _ from 'lodash'
 
-Vue.use(Vuex);
+Vue.use(Vuex)
 
 // eslint-disable-next-line import/prefer-default-export
 export const store = new Vuex.Store({
   state: {
     pageTitle: '',
-    inspectCurrentGraph: '',
-    inspectCurrentScale: 0,
-    inspectCurrentQuery: '',
+    graphs: {
+      financial: {
+        chart: {
+          loading: true
+        },
+        selectedScale: 0,
+        isInspected: false,
+        selectedQuery: ''
+      },
+      road_network: {
+        chart: {
+          loading: true
+        },
+        selectedScale: 0,
+        isInspected: false,
+        selectedQuery: ''
+      },
+      social_network: {
+        chart: {
+          loading: true
+        },
+        selectedScale: 0,
+        isInspected: false,
+        selectedQuery: ''
+      },
+      generic_uniform_network: {
+        chart: {
+          loading: true
+        },
+        selectedScale: 0,
+        isInspected: false,
+        selectedQuery: ''
+      },
+      biochemical_network: {
+        chart: {
+          loading: true
+        },
+        selectedScale: 0,
+        isInspected: false,
+        selectedQuery: ''
+      }
+    }
   },
   mutations: {
-    setPageTitle(state, pageTitle) {
-      state.pageTitle = pageTitle;
+    setPageTitle (state, payload) {
+      const { pageTitle } = payload
+      state.pageTitle = pageTitle
     },
-    setInspectCurrentGraph(state, inspectCurrentGraph) {
-      state.inspectCurrentGraph = inspectCurrentGraph;
+
+    setLoading (state, payload) {
+      const { stringPath, isLoading } = payload
+      _.set(state, `${stringPath}.loading`, isLoading)
     },
-    setInspectCurrentScale(state, inspectCurrentScale) {
-      state.inspectCurrentScale = inspectCurrentScale;
+
+    setInspectedGraph (state, payload) {
+      const { inspectedGraph } = payload
+      Object.keys(state.graphs).forEach((graphName) => {
+        state.graphs[graphName].isInspected = false
+      })
+      state.graphs[inspectedGraph].isInspected = true
     },
-    setInspectCurrentQuery(state, inspectCurrentQuery) {
-      state.inspectCurrentQuery = inspectCurrentQuery;
+
+    setSelectedScale (state, payload) {
+      const { graphName, selectedScale } = payload
+      state.graphs[graphName].selectedScale = selectedScale
     },
+
+    setSelectedQuery (state, payload) {
+      const { graphName, selectedQuery } = payload
+      state.graphs[graphName].selectedQuery = selectedQuery
+    }
   },
   getters: {
     pageTitle: state => state.pageTitle,
-    inspectCurrentGraph: state => state.inspectCurrentGraph,
-    inspectCurrentScale: state => state.inspectCurrentScale,
-    inspectCurrentQuery: state => state.inspectCurrentQuery,
-  },
-});
+
+    loading: state => stringPath => _.get(state, `${stringPath}.loading`),
+
+    inspectedGraph (state) {
+      // retrieves and returns title of the only one graph that has its isInspected value set to true
+      // existence of only one such graph is guaranteed by the mutaton's implementation
+      return Object.keys(_.pickBy(state.graphs, (value, _key) => value.isInspected === true))[0]
+    },
+
+    selectedScale: state => graphName => state.graphs[graphName].selectedScale,
+
+    selectedQuery: state => graphName => state.graphs[graphName].selectedQuery
+  }
+})

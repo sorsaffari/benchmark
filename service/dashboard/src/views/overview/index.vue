@@ -5,8 +5,8 @@
         :key="graphType"
         class="panel"
       >
-        <chart
-          :name="graphType"
+        <commits-chart
+          :graphName="graphType"
           :executions="completedExecutions"
           :executionSpans="filterSpans(graphType)"
         />
@@ -15,39 +15,39 @@
 </template>
 
 <script>
-import BenchmarkClient from '@/util/BenchmarkClient';
-import Chart from './Chart.vue';
+import BenchmarkClient from '@/util/BenchmarkClient'
+import CommitsChart from './ChartCommits.vue'
 
 export default {
   name: 'OverviewPage',
-  components: { Chart },
-  data() {
+  components: { CommitsChart },
+  data () {
     return {
-      pageTitle: "Benchmark Overview",
+      pageTitle: 'Benchmark Overview',
       numberOfCompletedExecutions: 8,
       completedExecutions: null,
       graphTypes: [],
-      executionSpans: null,
-    };
+      executionSpans: null
+    }
   },
-  async created() {
-    this.$store.commit('setPageTitle', this.pageTitle);
+  async created () {
+    this.$store.commit('setPageTitle', { pageTitle: this.pageTitle })
     // Get the last N completed executions
     // Note: we need to reverse the array because in the chart we want to show the most recent execution not as first but as last (rightmost)
     this.completedExecutions = (await BenchmarkClient.getLatestCompletedExecutions(
-      this.numberOfCompletedExecutions,
-    )).reverse();
+      this.numberOfCompletedExecutions
+    )).reverse()
     // Get all the execution spans relative to those executions
-    this.executionSpans = await BenchmarkClient.getExecutionsSpans(this.completedExecutions);
+    this.executionSpans = await BenchmarkClient.getExecutionsSpans(this.completedExecutions)
     // Compute graph names from spans, for each graph name we draw a chart
-    this.graphTypes = [...new Set(this.executionSpans.map(span => span.tags.graphType))];
+    this.graphTypes = [...new Set(this.executionSpans.map(span => span.tags.graphType))]
   },
   methods: {
-    filterSpans(name) {
-      return this.executionSpans.filter(span => span.tags.graphType === name);
-    },
-  },
-};
+    filterSpans (name) {
+      return this.executionSpans.filter(span => span.tags.graphType === name)
+    }
+  }
+}
 </script>
 
 <style lang="scss" scoped>

@@ -53,7 +53,6 @@
 </template>
 
 <script>
-// import InspectStore from '@/util/InspectSharedStore';
 import BenchmarkClient from '@/util/BenchmarkClient';
 import TabularView from './TabularView/TabularView.vue';
 

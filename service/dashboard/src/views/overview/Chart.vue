@@ -29,7 +29,6 @@ import "echarts/lib/component/legend";
 import "echarts/lib/component/legendScroll";
 
 import BenchmarkClient from "@/util/BenchmarkClient";
-import InspectStore from "@/util/InspectSharedStore";
 import QueriesUtil from "./QueriesUtil";
 
 export default {

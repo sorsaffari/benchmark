@@ -34,6 +34,7 @@ import grakn.benchmark.generator.storage.IgniteConceptStorage;
 import grakn.benchmark.generator.util.IgniteManager;
 import grakn.benchmark.generator.util.SchemaManager;
 import grakn.benchmark.profiler.util.ElasticSearchManager;
+import grakn.benchmark.common.timer.BenchmarkingTimer;
 import grakn.benchmark.profiler.util.TracingGraknClient;
 import grakn.client.GraknClient;
 import grakn.core.concept.type.AttributeType;
@@ -43,14 +44,12 @@ import org.apache.ignite.Ignite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static graql.lang.Graql.parseList;
@@ -117,14 +116,21 @@ public class GraknBenchmark {
 
             Ignite ignite = IgniteManager.initIgnite();
             GraknClient client = new GraknClient(config.graknUri());
-            DataGenerator dataGenerator = initDataGenerator(client, config.getKeyspace()); // use a non tracing client as we don't trace data generation yet
+
+            BenchmarkingTimer timer = new BenchmarkingTimer();
+            DataGenerator dataGenerator = initDataGenerator(client, config.getKeyspace(), timer); // use a non tracing client as we don't trace data generation yet
             List<Integer> numConceptsInRun = config.scalesToProfile();
 
+
             try {
+                timer.startGenerateAndTrack();
                 for (int numConcepts : numConceptsInRun) {
                     LOG.info("Generating graph to scale... " + numConcepts);
                     dataGenerator.generate(numConcepts);
+                    timer.startQueryTimeTracking();
                     threadedProfiler.processStaticQueries(config.numQueryRepetitions(), numConcepts);
+                    timer.endQueryTimeTracking();
+                    timer.printTimings();
                 }
             } catch (Exception e) {
                 throw e;
@@ -236,7 +242,7 @@ public class GraknBenchmark {
     /**
      * Connect a data generator to pre-prepared keyspace
      */
-    private DataGenerator initDataGenerator(GraknClient client, String keyspace) {
+    private DataGenerator initDataGenerator(GraknClient client, String keyspace, BenchmarkingTimer timer) {
         int randomSeed = 0;
         String dataGenerator= config.dataGenerator();
         GraknClient.Session session = client.session(keyspace);
@@ -251,7 +257,7 @@ public class GraknBenchmark {
 
         QueryProvider queryProvider = new QueryProvider(dataGeneratorDefinition);
 
-        return new DataGenerator(client, keyspace, storage, dataGenerator, queryProvider);
+        return new DataGenerator(client, keyspace, storage, dataGenerator, queryProvider, timer);
     }
 
     private static void printAscii() {

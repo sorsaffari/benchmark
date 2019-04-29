@@ -18,6 +18,7 @@
 
 package grakn.benchmark.generator;
 
+import grakn.benchmark.common.timer.BenchmarkingTimer;
 import grakn.benchmark.generator.query.QueryProvider;
 import grakn.benchmark.generator.storage.ConceptStorage;
 import grakn.benchmark.common.analysis.InsertQueryAnalyser;
@@ -48,17 +49,19 @@ public class DataGenerator {
     private final String dataGenerator;
     private final QueryProvider queryProvider;
     private final ConceptStorage storage;
+    private final BenchmarkingTimer timer;
 
     private int iteration;
 
 
-    public DataGenerator(GraknClient client, String keyspace, ConceptStorage storage, String dataGenerator, QueryProvider queryProvider) {
+    public DataGenerator(GraknClient client, String keyspace, ConceptStorage storage, String dataGenerator, QueryProvider queryProvider, BenchmarkingTimer timer) {
         this.client = client;
         this.keyspace = keyspace;
         this.dataGenerator = dataGenerator;
         this.queryProvider = queryProvider;
         this.iteration = 0;
         this.storage = storage;
+        this.timer = timer;
     }
 
     /**
@@ -96,7 +99,9 @@ public class DataGenerator {
          */
         queryIterator.forEachRemaining(q -> {
 
+            timer.startDataGeneratorQuery();
             List<ConceptMap> insertions = tx.execute(q);
+            timer.endDataGeneratorQuery();
             HashSet<Concept> insertedConcepts = InsertQueryAnalyser.getInsertedConcepts(q, insertions);
 
             insertedConcepts.forEach(storage::addConcept);

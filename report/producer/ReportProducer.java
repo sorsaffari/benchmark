@@ -22,6 +22,7 @@ package grakn.benchmark.report.producer;
 import grakn.benchmark.common.configuration.parse.BenchmarkArguments;
 import grakn.benchmark.common.configuration.BenchmarkConfiguration;
 import grakn.benchmark.common.exception.BootupException;
+import grakn.benchmark.common.timer.BenchmarkingTimer;
 import grakn.benchmark.generator.DataGenerator;
 import grakn.benchmark.generator.DataGeneratorException;
 import grakn.benchmark.generator.definition.DataGeneratorDefinition;
@@ -107,21 +108,27 @@ public class ReportProducer {
         loadSchema(client, keyspace, config.getGraqlSchema());
 
         // create the data generator
-        DataGenerator dataGenerator = initDataGenerator(client, keyspace);
+        BenchmarkingTimer timer = new BenchmarkingTimer();
+        DataGenerator dataGenerator = initDataGenerator(client, keyspace, timer);
 
         // write the relevant config metadata to the report
         reportData.addMetadata(config.configName(), config.concurrentClients(), config.configDescription(), config.dataGenerator());
 
         // alternate between generating data and profiling a queries
         List<GraqlQuery> queries = toGraqlQueries(config.getQueries());
+
         try {
+            timer.startGenerateAndTrack();
             for (int graphScale : config.scalesToProfile()) {
                 LOG.info("Generating graph to scale... " + graphScale);
                 // NOTE number of concepts actually generated may be just around the desired quantity
                 dataGenerator.generate(graphScale);
 
                 // collect and aggregate results
+                timer.startQueryTimeTracking();
                 executeAndRecord(client, queries, graphScale);
+                timer.endQueryTimeTracking();
+                timer.printTimings();
             }
         } finally {
             client.close();
@@ -168,7 +175,7 @@ public class ReportProducer {
     /**
      * Connect a data generator to pre-prepared keyspace
      */
-    private DataGenerator initDataGenerator(GraknClient client, String keyspace) {
+    private DataGenerator initDataGenerator(GraknClient client, String keyspace, BenchmarkingTimer timer) {
         int randomSeed = 0;
         GraknClient.Session session = client.session(keyspace);
 
@@ -181,7 +188,7 @@ public class ReportProducer {
         String dataGenerator = config.dataGenerator();
         DataGeneratorDefinition dataGeneratorDefinition = DefinitionFactory.getDefinition(dataGenerator, new Random(randomSeed), storage);
         QueryProvider queryProvider = new QueryProvider(dataGeneratorDefinition);
-        return new DataGenerator(client, keyspace, storage, dataGenerator, queryProvider);
+        return new DataGenerator(client, keyspace, storage, dataGenerator, queryProvider, timer);
     }
 
     private List<GraqlQuery> toGraqlQueries(List<String> queries) {

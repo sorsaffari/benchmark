@@ -141,7 +141,7 @@ class QueryProfiler implements Runnable {
                                 List<Pattern> match = new ArrayList<>();
                                 List<Variable> vars = new ArrayList<>();
                                 for (String conceptId : insertedConceptIds) {
-                                    Variable var = new Variable().asUserDefined();
+                                    Variable var = new Variable().asReturnedVar();
                                     vars.add(var);
                                     StatementThing id = var(var).id(conceptId);
                                     match.add(id);
@@ -157,7 +157,7 @@ class QueryProfiler implements Runnable {
                             List<Pattern> match = new ArrayList<>();
                             List<Variable> vars = new ArrayList<>();
                             for (String conceptId : insertedConceptIds) {
-                                Variable var = new Variable().asUserDefined();
+                                Variable var = new Variable().asReturnedVar();
                                 vars.add(var);
                                 StatementThing id = var(var).id(conceptId);
                                 match.add(id);
@@ -180,6 +180,6 @@ class QueryProfiler implements Runnable {
             session.close();
         }
         System.out.println("Thread runnable finished running queries");
-        System.out.print("\n\n");
+        System.out.print("\n");
     }
 }

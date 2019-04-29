@@ -68,7 +68,7 @@ export default {
   },
   props: {
     spans: Array,
-    padding: Number,
+    padding: String,
   },
   data() {
     return {

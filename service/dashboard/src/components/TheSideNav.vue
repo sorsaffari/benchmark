@@ -1,7 +1,7 @@
 <template>
   <el-aside>
     <el-menu
-      default-active="overview"
+      :default-active="activeItem"
       class="el-menu-vertical-demo"
       :router="true"
     >
@@ -27,8 +27,21 @@
 <script>
 export default {
   data() {
-    return {};
+    return {
+      activeItem: null
+    };
   },
+
+  mounted() {
+    this.activeItem = this.$route.meta.menuIndex
+  },
+
+  watch: {
+    $route(newVal, oldVal) {
+      this.activeItem = newVal.meta.menuIndex
+    }
+  },
+
   methods: {},
 };
 </script>

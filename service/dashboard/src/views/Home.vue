@@ -1,19 +1,25 @@
 <template>
-  <el-container class="main-super">
-    <side-nav />
-    <router-view />
+  <el-container style="height: 100%;">
+    <the-side-nav />
+
+    <el-container class="is-vertical">
+      <el-main>
+        <router-view />
+      </el-main>
+    </el-container>
   </el-container>
 </template>
 
 <script>
 // @ is an alias to /src
-import SideNav from '@/components/SideNav.vue';
+import TheSideNav from '@/components/TheSideNav.vue';
 
 export default {
   name: 'Home',
-  components: { SideNav },
+  components: { TheSideNav },
 };
 </script>
+
 <style>
 .main-super {
   height: 100%;

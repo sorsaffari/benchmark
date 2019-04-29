@@ -38,8 +38,8 @@ function computeStdDeviation(spans, avgTime) {
 /**
  * queriesTime structure => [
  *                             {
- *                              query: "",
- *                              times: [ { commit: "", avgTime: "" }, ... ]
+ *                                query: "",
+ *                                times: [ { commit: "", avgTime: "" }, ... ]
  *                              },
  *                              ...
  *                           ]
@@ -72,7 +72,6 @@ function buildQueriesTimes(queries, spans, executions, currentScale) {
     return { query, times };
   });
 }
-
 
 export default {
   buildQueriesMap,

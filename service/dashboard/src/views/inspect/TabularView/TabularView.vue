@@ -1,11 +1,19 @@
 <template>
-  <el-tabs type="border-card" class="wrapper" v-model="activeGraph">
-    <el-tab-pane v-for="graph in graphs" :key="graph" :label="graph">
+  <el-tabs
+    v-model="activeGraph"
+    type="border-card"
+    class="wrapper"
+  >
+    <el-tab-pane
+      v-for="graph in graphs"
+      :key="graph"
+      :label="graph"
+    >
       <graph-tab
         :graph="graph"
         :execution-spans="filterSpans(graph)"
-        :overviewScale="getOverviewScale(graph)"
-        :overviewQuery="getOverviewQuery(graph)"
+        :overview-scale="getOverviewScale(graph)"
+        :overview-query="getOverviewQuery(graph)"
       />
     </el-tab-pane>
   </el-tabs>
@@ -16,7 +24,13 @@ import GraphTab from './GraphTab.vue';
 export default {
   name: 'TabularView',
   components: { GraphTab },
-  props: ['graphs', 'executionSpans', 'currentGraph', 'currentQuery', 'currentScale'],
+  props: {
+    graphs: Array,
+    executionSpans: Array,
+    currentGraph: String,
+    currentQuery: String,
+    currentScale: Number,
+  },
   data() {
     return {
       activeGraph: '0',

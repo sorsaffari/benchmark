@@ -1,0 +1,10 @@
+@import "./variables";
+
+h2 {
+    color: #555;
+}
+
+a {
+    color: $color-default-link;
+    text-decoration: none;
+}

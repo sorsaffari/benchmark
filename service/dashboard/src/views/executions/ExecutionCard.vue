@@ -2,39 +2,67 @@
   <el-card>
     <el-row>
       <el-col :span="2">
-        {{ execution.status }}
+        <div :class="'status status-' + execution.status.toLowerCase()">
+          {{ execution.status }}
+        </div>
       </el-col>
-      <el-col :span="8" @click.native="inspectExecution(execution.id)">
-        {{execution.id}}
+      <el-col :span="5">
+        <router-link :to="'inspect/' + execution.id">
+          {{ execution.id.slice(0, 15) }}
+        </router-link>
       </el-col>
-      <el-col :span="4">
-        {{execution.executionInitialisedAt | parseDate}}
-      </el-col>
-      <el-col :span="3">
-        {{ execution.executionStartedAt | parseDate }}
-      </el-col>
-      <el-col :span="3">
-        {{ execution.executionCompletedAt | parseDate}}
-      </el-col>
-      <el-col :span="2">
-        <el-dropdown split-button type="primary" trigger="click">
-          Actions
+      <el-tooltip
+        class="item"
+        effect="dark"
+        content="Initialised at"
+        placement="top"
+      >
+        <el-col :span="5">
+          {{ execution.executionInitialisedAt | parseDate }}
+        </el-col>
+      </el-tooltip>
+      <el-tooltip
+        class="item"
+        effect="dark"
+        content="Started at"
+        placement="top"
+      >
+        <el-col :span="5">
+          {{ execution.executionStartedAt | parseDate }}
+        </el-col>
+      </el-tooltip>
+      <el-tooltip
+        class="item"
+        effect="dark"
+        content="Completed at"
+        placement="top"
+      >
+        <el-col :span="5">
+          {{ execution.executionCompletedAt | parseDate }}
+        </el-col>
+      </el-tooltip>
+      <el-col
+        :span="3"
+        class="actions"
+      >
+        <el-dropdown>
+          <span class="el-dropdown-link">
+            Actions<i class="el-icon-arrow-down el-icon--right" />
+          </span>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item
-              :v-show="isInProgress"
+              :disabled="!isInProgress"
               @click.native="copyStringToClipboard(execution.vmName)"
             >
               GCloud command
             </el-dropdown-item>
             <el-dropdown-item
-              :v-show="isInProgress"
+              :disabled="!isInProgress"
               @click.native="stopExecution(execution)"
             >
               Stop
             </el-dropdown-item>
-            <el-dropdown-item
-              @click.native="deleteExecution(execution)"
-            >
+            <el-dropdown-item @click.native="deleteExecution(execution)">
               Delete
             </el-dropdown-item>
           </el-dropdown-menu>
@@ -43,70 +71,99 @@
     </el-row>
   </el-card>
 </template>
+
 <script>
 import BenchmarkClient from '@/util/BenchmarkClient';
+import copy from 'copy-to-clipboard';
 
 export default {
-  filters: {
-    parseDate(ISOdate) {
-      if (!ISOdate) return 'N/A';
-      const epoch = Date.parse(ISOdate);
-      return new Date(epoch).toLocaleString('en-GB', { hour12: false });
-    },
+  props: {
+    execution: Object,
   },
-  props: ['execution'],
   computed: {
-    isInProgress() {
-      return false;
-      // return
-      //   this.execution.status === 'INITIALISING'
-      //   || this.execution.status === 'RUNNING'
-      // ;
+    isInProgress(status) {
+      return status === 'INITIALISING' || status === 'RUNNING';
     },
   },
   methods: {
-    inspectExecution(id) {
-      this.$router.push({ path: `inspect/${id}` });
-    },
     deleteExecution(execution) {
-      BenchmarkClient.deleteExecution(execution).then(() => {
-        console.log('execution deleted.');
-      });
+      this.$confirm('Are you sure you want to delete this execution?')
+        .then(() => {
+          BenchmarkClient.deleteExecution(execution)
+            .then(() => {
+              console.log('execution deleted.');
+              this.$message({ showClose: true, message: 'The execution was deleted successfully.', type: 'success' });
+            })
+            .catch((e) => {
+              console.log(e);
+              this.$message({ showClose: true, message: 'Deleting the execution failed. Check the console logs to find out why.', type: 'error' });
+            });
+        });
     },
     stopExecution(execution) {
-      BenchmarkClient.stopExecution(execution).then(() => {
-        console.log('execution stopped.');
-      });
+      this.$confirm('Are you sure you want to stop this execution?')
+        .then(() => {
+          BenchmarkClient.stopExecution(execution)
+            .then(() => {
+              console.log('execution stopped.');
+              this.$message({ showClose: true, message: 'The execution was stopped successfully.', type: 'success' });
+            })
+            .catch((e) => {
+              console.log(e);
+              this.$message({ showClose: true, message: 'Stoping the execution failed. Check the console logs to find out why.', type: 'error' });
+            });
+        });
     },
     copyStringToClipboard(vmName) {
-      copyToClipboard(
-        `gcloud compute ssh ubuntu@${vmName} --zone=us-east1-b`,
-      );
+      copy(`gcloud compute ssh ubuntu@${vmName} --zone=us-east1-b`);
     },
   },
 };
-const copyToClipboard = (str) => {
-  const el = document.createElement('textarea'); // Create a <textarea> element
-  el.value = str; // Set its value to the string that you want copied
-  el.setAttribute('readonly', ''); // Make it readonly to be tamper-proof
-  el.style.position = 'absolute';
-  el.style.left = '-9999px'; // Move outside the screen to make it invisible
-  document.body.appendChild(el); // Append the <textarea> element to the HTML document
-  const selected = document.getSelection().rangeCount > 0 // Check if there is any content selected previously
-    ? document.getSelection().getRangeAt(0) // Store selection if found
-    : false; // Mark as false to know no selection existed before
-  el.select(); // Select the <textarea> content
-  document.execCommand('copy'); // Copy - only works as a result of a user action (e.g. click events)
-  document.body.removeChild(el); // Remove the <textarea> element
-  if (selected) {
-    // If a selection existed before copying
-    document.getSelection().removeAllRanges(); // Unselect everything on the HTML document
-    document.getSelection().addRange(selected); // Restore the original selection
-  }
-};
 </script>
-<style scoped>
+
+<style lang="scss" scoped>
+@import "./src/assets/css/variables.scss";
+
+.el-row {
+  display: flex;
+  text-align: center;
+  align-items: center;
+}
+
 .el-card {
-  margin-bottom: 2px;
+  margin-bottom: $margin-default;
+  overflow: visible;
+  font-size: $font-size-card;
+}
+
+.el-col.actions {
+  position: absolute;
+  right: 0;
+  text-align: right;
+}
+
+.status {
+  width: fit-content;
+  border-radius: 10px;
+  font-size: 12px;
+  padding: 3px 8px;
+  line-height: 14px;
+  color: #fff;
+}
+
+.status-initialising {
+  background-color: #f39c12;
+}
+.status-running {
+  background-color: #2980b9;
+}
+.status-completed {
+  background-color: #27ae60;
+}
+.status-stopped {
+  background-color: #2c3e50;
+}
+.status-failed {
+  background-color: #c0392b;
 }
 </style>

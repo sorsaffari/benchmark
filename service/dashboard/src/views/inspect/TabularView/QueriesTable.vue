@@ -1,20 +1,37 @@
 <template>
-    <div>
-        <el-row class="header" type="flex" align="center">
-        <el-col :span="14">Query</el-col>
-        <el-col :span="3">Min (rep)</el-col>
-        <el-col :span="3">Med</el-col>
-        <el-col :span="3">Max (rep)</el-col>
-        <el-col :span="1">Reps</el-col>
-        </el-row>
-        <div v-for="query in queries" :key="query">
-        <query-line
-            :query="query"
-            :isOverviewQuery="query===overviewQuery"
-            :spans="filterQuerySpans(query)"
-        />
-        </div>
+  <div>
+    <el-row
+      class="header"
+      type="flex"
+      align="center"
+    >
+      <el-col :span="14">
+        Query
+      </el-col>
+      <el-col :span="3">
+        Min (rep)
+      </el-col>
+      <el-col :span="3">
+        Med
+      </el-col>
+      <el-col :span="3">
+        Max (rep)
+      </el-col>
+      <el-col :span="1">
+        Reps
+      </el-col>
+    </el-row>
+    <div
+      v-for="query in queries"
+      :key="query"
+    >
+      <query-line
+        :query="query"
+        :is-overview-query="query===overviewQuery"
+        :spans="filterQuerySpans(query)"
+      />
     </div>
+  </div>
 </template>
 <script>
 import BenchmarkClient from '@/util/BenchmarkClient';
@@ -22,8 +39,12 @@ import QueryLine from './QueryLine.vue';
 
 export default {
   name: 'QueriesTable',
-  props: ['currentScale', 'overviewQuery', 'executionSpans'],
   components: { QueryLine },
+  props: {
+    currentScale: Number,
+    overviewQuery: String,
+    executionSpans: Array,
+  },
   data() {
     return {
       queries: [],

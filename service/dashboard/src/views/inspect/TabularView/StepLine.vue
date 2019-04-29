@@ -1,8 +1,15 @@
 <template>
   <div>
     <el-row class="currentRow">
-      <el-col :span="14" class="name-column" :style="styleObject">
-        <i :class="{ 'el-icon-circle-plus-outline': !expand, 'el-icon-remove-outline': expand }" @click="expandLine"/>
+      <el-col
+        :span="14"
+        class="name-column"
+        :style="styleObject"
+      >
+        <i
+          :class="{ 'el-icon-circle-plus-outline': !expand, 'el-icon-remove-outline': expand }"
+          @click="expandLine"
+        />
         <div>{{ spans[0].name }}</div>
       </el-col>
       <el-col :span="3">
@@ -59,7 +66,10 @@ export default {
       return `${Number(num / 1000).toFixed(3)} ms`;
     },
   },
-  props: ['spans', 'padding'],
+  props: {
+    spans: Array,
+    padding: String,
+  },
   data() {
     return {
       expand: false,

@@ -1,29 +1,26 @@
 <template>
   <el-container class="is-vertical overview-section">
-    <el-main>
-      <h2>Benchmark Overview</h2>
-      <el-row
-        v-for="graphType in graphTypes"
-        :key="graphType"
-        class="panel"
-      >
-        <overview-commits-chart
-          :name="graphType"
-          :executions="completedExecutions"
-          :executionSpans="filterSpans(graphType)"
-        />
-      </el-row>
-    </el-main>
+    <el-row
+      v-for="graphType in graphTypes"
+      :key="graphType"
+      class="panel"
+    >
+      <commits-chart
+        :graph-name="graphType"
+        :executions="completedExecutions"
+        :execution-spans="filterSpans(graphType)"
+      />
+    </el-row>
   </el-container>
 </template>
 
 <script>
 import BenchmarkClient from '@/util/BenchmarkClient';
-import OverviewCommitsChart from './OverviewCommitsChart.vue';
+import CommitsChart from './ChartCommits.vue';
 
 export default {
   name: 'OverviewPage',
-  components: { OverviewCommitsChart },
+  components: { CommitsChart },
   data() {
     return {
       numberOfCompletedExecutions: 8,
@@ -50,21 +47,14 @@ export default {
   },
 };
 </script>
-<style scoped>
-.overview-section {
-  overflow: scroll;
-}
-.el-main {
-  padding: 20px 50px;
-}
-.el-container {
-  background-color: #f4f3ef;
-}
+
+<style lang="scss" scoped>
+@import "./src/assets/css/variables.scss";
 .panel {
-  background-color: white;
-  margin-bottom: 20px;
-}
-h2 {
-  margin-bottom: 20px;
+  margin-bottom: $margin-default;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 </style>

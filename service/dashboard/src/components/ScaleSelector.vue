@@ -1,13 +1,33 @@
 <template>
-    <div class="container">
-        <span class="scale-label">Scale:</span>
-        <div v-for="scale in scales" :key="scale" :span="1">
-            <div class="scale-tab" :class="{ active: scale == currentScale }" @click="$emit('selected-scale', scale)">
-            {{ scale }}
-            </div>
-        </div>
+  <div class="container">
+    <span class="scale-label">Scale:</span>
+    <div
+      v-for="scale in scales"
+      :key="scale"
+      :span="1"
+    >
+      <div
+        class="scale-tab"
+        :class="{ active: scale == currentScale }"
+        @click="$emit('selected-scale', scale)"
+      >
+        {{ scale }}
+      </div>
     </div>
+  </div>
 </template>
+
+<script>
+export default {
+  name: 'ScaleSelector',
+  props: {
+    scales: Array,
+    currentScale: Number,
+  },
+};
+</script>
+
+
 <style scoped>
 .scale-label{
   font-weight: bold;
@@ -30,9 +50,3 @@
     justify-content: center;
 }
 </style>
-<script>
-export default {
-  name: 'ScaleSelector',
-  props: ['scales', 'currentScale'],
-};
-</script>

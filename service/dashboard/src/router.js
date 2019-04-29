@@ -14,15 +14,18 @@ export default new Router({
       children: [
         {
           path: 'overview',
-          component: () => import(/* webpackChunkName: "overview" */ './views/overview/Overview.vue'),
+          component: () => import(/* webpackChunkName: "overview" */ './views/overview'),
+          meta: { menuIndex: '/overview' },
         },
         {
           path: 'executions',
           component: () => import(/* webpackChunkName: "executions" */ './views/executions/Executions.vue'),
+          meta: { menuIndex: '/executions' },
         },
         {
           path: 'inspect/:executionId',
           component: () => import(/* webpackChunkName: "inspect" */ './views/inspect/Inspect.vue'),
+          meta: { menuIndex: '/executions' },
         },
       ],
     },

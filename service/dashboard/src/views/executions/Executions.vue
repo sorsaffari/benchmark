@@ -1,8 +1,9 @@
 <template>
-  <section class="el-container is-vertical page-container">
-    <main class="el-main">
-      <h2>Benchmark Executions</h2>
-      <!-- <el-row>
+  <section
+    v-loading="loading"
+    class="el-container is-vertical page-container"
+  >
+    <!-- <el-row>
         <el-popover
           v-model="popoverVisible"
           placement="right-start"
@@ -41,13 +42,12 @@
           />
         </el-popover>
         <el-button type="success" circle icon="el-icon-plus"></el-button>
-      </el-row> -->
-      <execution-card
-        v-for="exec in executions"
-        :key="exec.id"
-        :execution="exec"
-      />
-    </main>
+    </el-row>-->
+    <execution-card
+      v-for="exec in executions"
+      :key="exec.id"
+      :execution="exec"
+    />
   </section>
 </template>
 
@@ -60,6 +60,7 @@ export default {
   components: { ExecutionCard },
   data() {
     return {
+      loading: true,
       popoverVisible: false,
       executions: [],
       newExecution: {
@@ -70,59 +71,39 @@ export default {
   },
   created() {
     BenchmarkClient.getExecutions(
-      `{ executions{ 
-          id
-          prMergedAt 
-          prNumber 
-          prUrl 
-          commit 
-          status 
-          executionInitialisedAt
-          executionStartedAt 
-          executionCompletedAt 
-          vmName } }`,
+      '{ executions { id prMergedAt prNumber prUrl commit status executionInitialisedAt executionStartedAt executionCompletedAt vmName } }',
     ).then((execs) => {
       this.executions = execs.data.executions;
+      this.loading = false;
     });
   },
   methods: {
-    triggerExecution() {
-      BenchmarkClient.triggerExecution(this.newExecution)
-        .then(() => {
-          this.$notify({
-            title: 'Success',
-            message: 'New Execution triggered successfully!',
-            type: 'success',
-          });
-        })
-        .catch(() => {
-          this.$notify.error({
-            title: 'Error',
-            message: 'It was not possible to trigger new Execution.',
-          });
-        });
-      this.newExecution.commit = undefined;
-    },
+    // triggerExecution() {
+    //   BenchmarkClient.triggerExecution(this.newExecution)
+    //     .then(() => {
+    //       this.$notify({
+    //         title: "Success",
+    //         message: "New Execution triggered successfully!",
+    //         type: "success"
+    //       });
+    //     })
+    //     .catch(() => {
+    //       this.$notify.error({
+    //         title: "Error",
+    //         message: "It was not possible to trigger new Execution."
+    //       });
+    //     });
+    //   this.newExecution.commit = undefined;
+    // }
   },
 };
 </script>
 
 <style scoped>
-.el-container {
-  padding: 0 30px;
-  background-color: #f4f3ef;
+section {
+  min-height: 100%;
 }
 
-.el-header {
-  text-align: start;
-  height: 30px;
-}
-.panel {
-  background-color: white;
-}
-h2 {
-  margin-bottom: 20px;
-}
 .cards-row {
   margin-bottom: 20px;
 }

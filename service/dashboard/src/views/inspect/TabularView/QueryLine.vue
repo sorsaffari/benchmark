@@ -1,8 +1,18 @@
 <template>
   <div>
-    <el-row class="currentRow" :class="{'bordered': !expand, 'highlighted': expand}">
-      <el-col :span="14" class="query-column" style="text-align: left;">
-        <i :class="{ 'el-icon-arrow-right': !expand, 'el-icon-arrow-down': expand }" @click="expandLine"/>
+    <el-row
+      class="currentRow"
+      :class="{'bordered': !expand, 'highlighted': expand}"
+    >
+      <el-col
+        :span="14"
+        class="query-column"
+        style="text-align: left;"
+      >
+        <i
+          :class="{ 'el-icon-arrow-right': !expand, 'el-icon-arrow-down': expand }"
+          @click="expandLine"
+        />
         <div>{{ query }}</div>
       </el-col>
       <el-col :span="3">
@@ -18,7 +28,10 @@
         {{ reps }}
       </el-col>
     </el-row>
-    <el-row v-if="expand" :class="{'bordered': expand}">
+    <el-row
+      v-if="expand"
+      :class="{'bordered': expand}"
+    >
       <step-line
         v-for="stepNumber in stepNumbers"
         :key="stepNumber"
@@ -68,16 +81,17 @@ export default {
       return `${Number(num / 1000).toFixed(3)} ms`;
     },
   },
-  props: ['query', 'spans', 'isOverviewQuery'],
+  props: {
+    query: String,
+    spans: Array,
+    isOverviewQuery: Boolean,
+  },
   data() {
     return {
       expand: false,
       children: [],
       stepNumbers: null,
     };
-  },
-  created() {
-    if (this.isOverviewQuery) this.expandLine();
   },
   computed: {
     min() {
@@ -110,6 +124,9 @@ export default {
     reps() {
       return this.spans.length;
     },
+  },
+  created() {
+    if (this.isOverviewQuery) this.expandLine();
   },
   methods: {
     expandLine() {

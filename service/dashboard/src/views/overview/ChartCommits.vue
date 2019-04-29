@@ -69,7 +69,9 @@ export default {
       legendsMap: [],
       chartOoptions: {},
       selectedScale: 0,
-      loading: true
+      querySpans: [],
+      queries: [],
+      loading: true,
     };
   },
 
@@ -86,10 +88,13 @@ export default {
     ].sort((a, b) => a - b);
 
     this.selectedScale = this.scales[0];
-  },
 
-  mounted() {
-    this.drawChart();
+    this.querySpans = await fetchQuerySpans(this.executionSpans);
+    this.queries = uniqueQueriesSortedArray(this.querySpans);
+
+    this.$nextTick(() => {
+      this.drawChart();
+    });
   },
 
   methods: {
@@ -109,18 +114,14 @@ export default {
     },
 
     async drawChart() {
-      // Compute array of unique queries that have been executed on this graph
-      const querySpans = await fetchQuerySpans(this.executionSpans);
-      const queries = uniqueQueriesSortedArray(querySpans);
-
       const dataAndSeries = QueriesUtil.buildQueriesTimes(
-        queries,
-        querySpans,
+        this.queries,
+        this.querySpans,
         this.executions,
         this.selectedScale,
       );
 
-      this.legendsMap = QueriesUtil.buildQueriesMap(queries);
+      this.legendsMap = QueriesUtil.buildQueriesMap(this.queries);
 
       const series = dataAndSeries.map(data => ({
         name: this.legendsMap[data.query],

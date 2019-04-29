@@ -12,7 +12,7 @@
       <el-dropdown-item
         v-for="scale in scales"
         :key="scale"
-        @click.native="updateScale(graphName, scale)"
+        @click.native="updateScale(scale)"
       >
         {{ scale }}
       </el-dropdown-item>
@@ -34,23 +34,16 @@ export default {
     },
   },
 
-  computed: {
-    currentScale() {
-      return this.$store.getters.selectedScale(this.graphName);
-    },
+  data () {
+    return {
+      currentScale: this.scales[0]
+    }
   },
 
   methods: {
-    updateScale(graphName, selectedScale) {
-      this.$store.commit('setSelectedScale', {
-        graphName,
-        selectedScale,
-      });
-
-      this.$store.commit('setLoading', {
-        stringPath: `graphs.${this.graphName}.chart`,
-        isLoading: true,
-      });
+    updateScale(selectedScale) {
+      this.currentScale = selectedScale;
+      this.$emit('scale-selected', selectedScale);
     },
   },
 };

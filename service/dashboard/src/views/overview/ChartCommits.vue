@@ -12,6 +12,7 @@
         <selector-scale
           :scales="scales"
           :graph-name="graphName"
+          @scale-selected="onScaleSelection"
         />
       </div>
     </div>
@@ -67,16 +68,9 @@ export default {
       scales: [],
       legendsMap: [],
       chartOoptions: {},
+      selectedScale: 0,
+      loading: true
     };
-  },
-
-  computed: {
-    selectedScale() {
-      return this.$store.getters.selectedScale(this.graphName);
-    },
-    loading() {
-      return this.$store.getters.loading(`graphs.${this.graphName}.chart`);
-    },
   },
 
   watch: {
@@ -91,10 +85,7 @@ export default {
       ...new Set(this.executionSpans.map(span => span.tags.graphScale)),
     ].sort((a, b) => a - b);
 
-    this.$store.commit('setSelectedScale', {
-      graphName: this.graphName,
-      selectedScale: this.scales[0],
-    });
+    this.selectedScale = this.scales[0];
 
     this.$store.commit('setLoading', {
       stringPath: `graphs.${this.graphName}.chart`,
@@ -107,6 +98,11 @@ export default {
   },
 
   methods: {
+    onScaleSelection(scale) {
+      this.selectedScale = scale;
+      this.loading = true;
+    },
+
     redirectToInspect(args) {
       const currentQuery = Object.keys(this.legendsMap).filter(
         x => this.legendsMap[x] === args.seriesName,
@@ -227,10 +223,7 @@ export default {
         },
       };
 
-      this.$store.commit('setLoading', {
-        stringPath: `graphs.${this.graphName}.chart`,
-        isLoading: false,
-      });
+      this.loading = false;
     },
   },
 };

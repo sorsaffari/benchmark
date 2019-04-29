@@ -84,7 +84,7 @@ export default {
     return {
       executionId: this.$route.params.executionId,
       currentGraph: this.$route.query.graph,
-      currentScale: parseInt(this.$route.query.scale),
+      currentScale: parseInt(this.$route.query.scale, 0),
       currentQuery: this.$route.query.query,
       execution: {},
       executionSpans: [],

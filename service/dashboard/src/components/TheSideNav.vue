@@ -28,18 +28,18 @@
 export default {
   data() {
     return {
-      activeItem: null
+      activeItem: null,
     };
   },
 
-  mounted() {
-    this.activeItem = this.$route.meta.menuIndex
+  watch: {
+    $route(newVal) {
+      this.activeItem = newVal.meta.menuIndex;
+    },
   },
 
-  watch: {
-    $route(newVal, oldVal) {
-      this.activeItem = newVal.meta.menuIndex
-    }
+  mounted() {
+    this.activeItem = this.$route.meta.menuIndex;
   },
 
   methods: {},

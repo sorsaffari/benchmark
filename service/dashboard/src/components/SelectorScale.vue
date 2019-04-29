@@ -34,10 +34,10 @@ export default {
     },
   },
 
-  data () {
+  data() {
     return {
-      currentScale: this.scales[0]
-    }
+      currentScale: this.scales[0],
+    };
   },
 
   methods: {

@@ -86,11 +86,6 @@ export default {
     ].sort((a, b) => a - b);
 
     this.selectedScale = this.scales[0];
-
-    this.$store.commit('setLoading', {
-      stringPath: `graphs.${this.graphName}.chart`,
-      isLoading: true,
-    });
   },
 
   mounted() {
@@ -107,18 +102,6 @@ export default {
       const currentQuery = Object.keys(this.legendsMap).filter(
         x => this.legendsMap[x] === args.seriesName,
       )[0];
-
-      this.$store.commit('setInspectedGraph', {
-        inspectedGraph: this.graphName,
-      });
-      this.$store.commit('setSelectedScale', {
-        graphName: this.graphName,
-        selectedScale: this.selectedScale,
-      });
-      this.$store.commit('setSelectedQuery', {
-        graphName: this.graphName,
-        selectedQuery: currentQuery,
-      });
 
       this.$router.push({
         path: `inspect/${args.data.executionId}?graph=${this.graphName}&scale=${this.selectedScale}&query=${currentQuery}`,

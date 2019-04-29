@@ -60,7 +60,6 @@ export default {
   components: { ExecutionCard },
   data() {
     return {
-      pageTitle: 'Benchmark Executions',
       loading: true,
       popoverVisible: false,
       executions: [],
@@ -71,7 +70,6 @@ export default {
     };
   },
   created() {
-    this.$store.commit('setPageTitle', { pageTitle: this.pageTitle });
     BenchmarkClient.getExecutions(
       '{ executions { id prMergedAt prNumber prUrl commit status executionInitialisedAt executionStartedAt executionCompletedAt vmName } }',
     ).then((execs) => {

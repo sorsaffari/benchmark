@@ -7,7 +7,6 @@ Vue.use(Vuex);
 // eslint-disable-next-line import/prefer-default-export
 export const store = new Vuex.Store({
   state: {
-    pageTitle: '',
     graphs: {
       financial: {
         chart: {
@@ -52,11 +51,6 @@ export const store = new Vuex.Store({
     },
   },
   mutations: {
-    setPageTitle(state, payload) {
-      const { pageTitle } = payload;
-      state.pageTitle = pageTitle;
-    },
-
     setLoading(state, payload) {
       const { stringPath, isLoading } = payload;
       _.set(state, `${stringPath}.loading`, isLoading); // TODO: Object.assign()
@@ -81,8 +75,6 @@ export const store = new Vuex.Store({
     },
   },
   getters: {
-    pageTitle: state => state.pageTitle,
-
     loading: state => stringPath => _.get(state, `${stringPath}.loading`), // TODO: find alternative
 
     inspectedGraph(state) {

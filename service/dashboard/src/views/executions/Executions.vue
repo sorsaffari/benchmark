@@ -1,5 +1,8 @@
 <template>
-  <section v-loading="loading" class="el-container is-vertical page-container">
+  <section
+    v-loading="loading"
+    class="el-container is-vertical page-container"
+  >
     <!-- <el-row>
         <el-popover
           v-model="popoverVisible"
@@ -40,18 +43,22 @@
         </el-popover>
         <el-button type="success" circle icon="el-icon-plus"></el-button>
     </el-row>-->
-    <execution-card v-for="exec in executions" :key="exec.id" :execution="exec"/>
+    <execution-card
+      v-for="exec in executions"
+      :key="exec.id"
+      :execution="exec"
+    />
   </section>
 </template>
 
 <script>
-import ExecutionCard from './ExecutionCard.vue'
-import BenchmarkClient from '@/util/BenchmarkClient'
+import ExecutionCard from './ExecutionCard.vue';
+import BenchmarkClient from '@/util/BenchmarkClient';
 
 export default {
   name: 'ExecutionsPage',
   components: { ExecutionCard },
-  data () {
+  data() {
     return {
       pageTitle: 'Benchmark Executions',
       loading: true,
@@ -59,18 +66,18 @@ export default {
       executions: [],
       newExecution: {
         commit: undefined,
-        repoUrl: undefined
-      }
-    }
+        repoUrl: undefined,
+      },
+    };
   },
-  created () {
-    this.$store.commit('setPageTitle', { pageTitle: this.pageTitle })
+  created() {
+    this.$store.commit('setPageTitle', { pageTitle: this.pageTitle });
     BenchmarkClient.getExecutions(
-      `{ executions { id prMergedAt prNumber prUrl commit status executionInitialisedAt executionStartedAt executionCompletedAt vmName } }`
+      '{ executions { id prMergedAt prNumber prUrl commit status executionInitialisedAt executionStartedAt executionCompletedAt vmName } }',
     ).then((execs) => {
-      this.executions = execs.data.executions
-      this.loading = false
-    })
+      this.executions = execs.data.executions;
+      this.loading = false;
+    });
   },
   methods: {
     // triggerExecution() {
@@ -90,8 +97,8 @@ export default {
     //     });
     //   this.newExecution.commit = undefined;
     // }
-  }
-}
+  },
+};
 </script>
 
 <style scoped>

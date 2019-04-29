@@ -1,114 +1,147 @@
 <template>
-  <el-card class="box-card" v-loading="loading">
-    <div slot="header" class="clearfix">
+  <el-card
+    v-loading="loading"
+    class="box-card"
+  >
+    <div
+      slot="header"
+      class="clearfix"
+    >
       <span>{{ graphName | formatTitle }}</span>
       <div class="actions">
-        <selector-scale :scales="scales" :graphName="graphName"/>
+        <selector-scale
+          :scales="scales"
+          :graph-name="graphName"
+        />
       </div>
     </div>
-    <e-chart :autoresize="true" :options="chartOoptions" @click="redirectToInspect"/>
+    <e-chart
+      :autoresize="true"
+      :options="chartOoptions"
+      @click="redirectToInspect"
+    />
   </el-card>
 </template>
 
 <script>
-import BenchmarkClient from '@/util/BenchmarkClient'
-import QueriesUtil from './QueriesUtil'
-import EChart from 'vue-echarts'
-import 'echarts/lib/chart/line'
-import 'echarts/lib/component/tooltip'
-import 'echarts/lib/component/legend'
-import 'echarts/lib/component/legendScroll'
-import SelectorScale from '@/components/SelectorScale.vue'
+import BenchmarkClient from '@/util/BenchmarkClient';
+import QueriesUtil from './QueriesUtil';
+import EChart from 'vue-echarts';
+import 'echarts/lib/chart/line';
+import 'echarts/lib/component/tooltip';
+import 'echarts/lib/component/legend';
+import 'echarts/lib/component/legendScroll';
+import SelectorScale from '@/components/SelectorScale.vue';
 
 export default {
   components: { EChart, SelectorScale },
 
+  filters: {
+    formatTitle(graphName) {
+      const presentableName = graphName
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1));
+      return presentableName.join(' ');
+    },
+  },
+
   props: {
     graphName: {
       type: String,
-      required: true
+      required: true,
     },
 
     executions: {
       type: Array,
-      required: true
+      required: true,
     },
 
     executionSpans: {
       type: Array,
-      required: true
-    }
+      required: true,
+    },
   },
 
-  filters: {
-    formatTitle (graphName) {
-      const presentableName = graphName
-        .split('_')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      return presentableName.join(' ')
-    }
-  },
-
-  data () {
+  data() {
     return {
       scales: [],
       legendsMap: [],
-      chartOoptions: {}
-    }
-  },
-
-  watch: {
-    selectedScale (val, previous) {
-      if (val === previous) return
-      this.drawChart()
-    }
+      chartOoptions: {},
+    };
   },
 
   computed: {
-    selectedScale () {
-      return this.$store.getters.selectedScale(this.graphName)
+    selectedScale() {
+      return this.$store.getters.selectedScale(this.graphName);
     },
-    loading () {
-      return this.$store.getters.loading(`graphs.${this.graphName}.chart`)
-    }
+    loading() {
+      return this.$store.getters.loading(`graphs.${this.graphName}.chart`);
+    },
+  },
+
+  watch: {
+    selectedScale(val, previous) {
+      if (val === previous) return;
+      this.drawChart();
+    },
+  },
+
+  async created() {
+    this.scales = [
+      ...new Set(this.executionSpans.map(span => span.tags.graphScale)),
+    ].sort((a, b) => a - b);
+
+    this.$store.commit('setSelectedScale', {
+      graphName: this.graphName,
+      selectedScale: this.scales[0],
+    });
+
+    this.$store.commit('setLoading', {
+      stringPath: `graphs.${this.graphName}.chart`,
+      isLoading: true,
+    });
+  },
+
+  mounted() {
+    this.drawChart();
   },
 
   methods: {
-    redirectToInspect (args) {
+    redirectToInspect(args) {
       const currentQuery = Object.keys(this.legendsMap).filter(
-        x => this.legendsMap[x] === args.seriesName
-      )[0]
+        x => this.legendsMap[x] === args.seriesName,
+      )[0];
 
       this.$store.commit('setInspectedGraph', {
-        inspectedGraph: this.graphName
-      })
+        inspectedGraph: this.graphName,
+      });
       this.$store.commit('setSelectedScale', {
         graphName: this.graphName,
-        selectedScale: this.selectedScale
-      })
+        selectedScale: this.selectedScale,
+      });
       this.$store.commit('setSelectedQuery', {
         graphName: this.graphName,
-        selectedQuery: currentQuery
-      })
+        selectedQuery: currentQuery,
+      });
 
       this.$router.push({
-        path: `inspect/${args.data.executionId}`
-      })
+        path: `inspect/${args.data.executionId}`,
+      });
     },
 
-    async drawChart () {
+    async drawChart() {
       // Compute array of unique queries that have been executed on this graph
-      const querySpans = await fetchQuerySpans(this.executionSpans)
-      const queries = uniqueQueriesSortedArray(querySpans)
+      const querySpans = await fetchQuerySpans(this.executionSpans);
+      const queries = uniqueQueriesSortedArray(querySpans);
 
       const dataAndSeries = QueriesUtil.buildQueriesTimes(
         queries,
         querySpans,
         this.executions,
-        this.selectedScale
-      )
+        this.selectedScale,
+      );
 
-      this.legendsMap = QueriesUtil.buildQueriesMap(queries)
+      this.legendsMap = QueriesUtil.buildQueriesMap(queries);
 
       const series = dataAndSeries.map(data => ({
         name: this.legendsMap[data.query],
@@ -119,7 +152,7 @@ export default {
           symbol: 'circle',
           stdDeviation: x.stdDeviation,
           repetitions: x.repetitions,
-          executionId: x.executionId
+          executionId: x.executionId,
         })),
         smooth: true,
         emphasis: { label: { show: false }, itemStyle: { color: 'yellow' } },
@@ -129,21 +162,21 @@ export default {
                     query: ${args.seriesName}
                     <br> avgTime: ${Number(args.data.value).toFixed(3)} ms
                     <br> stdDeviation: ${Number(args.data.stdDeviation).toFixed(
-          3
+          3,
         )} ms
-                    <br> repetitions: ${args.data.repetitions}`
-        }
-      }))
+                    <br> repetitions: ${args.data.repetitions}`,
+        },
+      }));
 
       const xData = dataAndSeries[0].times.map(x => ({
         value: x.commit.substring(0, 15),
-        commit: x.commit
-      }))
+        commit: x.commit,
+      }));
 
       this.chartOoptions = {
         tooltip: {
           show: true,
-          trigger: 'item'
+          trigger: 'item',
         },
         legend: {
           type: 'scroll',
@@ -156,9 +189,9 @@ export default {
             showDelay: 500,
             triggerOn: 'mousemove',
             formatter: args => Object.keys(this.legendsMap).filter(
-              x => this.legendsMap[x] === args.name
-            )
-          }
+              x => this.legendsMap[x] === args.name,
+            ),
+          },
         },
         calculable: true,
         xAxis: [
@@ -166,16 +199,16 @@ export default {
             type: 'category',
             boundaryGap: false,
             data: xData,
-            triggerEvent: true
-          }
+            triggerEvent: true,
+          },
         ],
         yAxis: [
           {
             type: 'value',
             axisLabel: {
-              formatter: '{value} ms'
-            }
-          }
+              formatter: '{value} ms',
+            },
+          },
         ],
         series,
         dataZoom: [
@@ -183,69 +216,49 @@ export default {
             type: 'inside',
             zoomOnMouseWheel: 'ctrl',
             filterMode: 'none',
-            orient: 'vertical'
-          }
+            orient: 'vertical',
+          },
         ],
         grid: {
           left: 70,
           top: 20,
           right: 70,
-          bottom: 70
-        }
-      }
+          bottom: 70,
+        },
+      };
 
       this.$store.commit('setLoading', {
         stringPath: `graphs.${this.graphName}.chart`,
-        isLoading: false
-      })
-    }
+        isLoading: false,
+      });
+    },
   },
-
-  async created () {
-    this.scales = [
-      ...new Set(this.executionSpans.map(span => span.tags.graphScale))
-    ].sort((a, b) => a - b)
-
-    this.$store.commit('setSelectedScale', {
-      graphName: this.graphName,
-      selectedScale: this.scales[0]
-    })
-
-    this.$store.commit('setLoading', {
-      stringPath: `graphs.${this.graphName}.chart`,
-      isLoading: true
-    })
-  },
-
-  mounted () {
-    this.drawChart()
-  }
-}
+};
 
 /**
  * Helper functions
  */
-function getQuerySpansRequest (id) {
+function getQuerySpansRequest(id) {
   return BenchmarkClient.getSpans(
-    `{ querySpans( parentId: "${id}" limit: 500){ id name duration tags { query type repetition repetitions }} }`
-  )
+    `{ querySpans( parentId: "${id}" limit: 500){ id name duration tags { query type repetition repetitions }} }`,
+  );
 }
 
-function uniqueQueriesSortedArray (querySpans) {
-  return [...new Set(querySpans.map(span => span.tags.query))].sort()
+function uniqueQueriesSortedArray(querySpans) {
+  return [...new Set(querySpans.map(span => span.tags.query))].sort();
 }
 
-async function fetchQuerySpans (executionSpans) {
+async function fetchQuerySpans(executionSpans) {
   // eslint-disable-next-line
   const querySpanPromises = executionSpans.map(executionSpan => getQuerySpansRequest(executionSpan.id).then(resp => resp.data.querySpans.map(qs => Object.assign(
     {
       executionName: executionSpan.tags.executionName,
-      scale: executionSpan.tags.graphScale
+      scale: executionSpan.tags.graphScale,
     },
-    qs
-  ))))
-  const responses = await Promise.all(querySpanPromises)
-  return responses.reduce((acc, resp) => acc.concat(resp), [])
+    qs,
+  ))));
+  const responses = await Promise.all(querySpanPromises);
+  return responses.reduce((acc, resp) => acc.concat(resp), []);
 }
 </script>
 

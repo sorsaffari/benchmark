@@ -1,8 +1,8 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
-import _ from 'lodash'
+import Vue from 'vue';
+import Vuex from 'vuex';
+import _ from 'lodash';
 
-Vue.use(Vuex)
+Vue.use(Vuex);
 
 // eslint-disable-next-line import/prefer-default-export
 export const store = new Vuex.Store({
@@ -11,88 +11,89 @@ export const store = new Vuex.Store({
     graphs: {
       financial: {
         chart: {
-          loading: true
+          loading: true,
         },
         selectedScale: 0,
         isInspected: false,
-        selectedQuery: ''
+        selectedQuery: '',
       },
       road_network: {
         chart: {
-          loading: true
+          loading: true,
         },
         selectedScale: 0,
         isInspected: false,
-        selectedQuery: ''
+        selectedQuery: '',
       },
       social_network: {
         chart: {
-          loading: true
+          loading: true,
         },
         selectedScale: 0,
         isInspected: false,
-        selectedQuery: ''
+        selectedQuery: '',
       },
       generic_uniform_network: {
         chart: {
-          loading: true
+          loading: true,
         },
         selectedScale: 0,
         isInspected: false,
-        selectedQuery: ''
+        selectedQuery: '',
       },
       biochemical_network: {
         chart: {
-          loading: true
+          loading: true,
         },
         selectedScale: 0,
         isInspected: false,
-        selectedQuery: ''
-      }
-    }
+        selectedQuery: '',
+      },
+    },
   },
   mutations: {
-    setPageTitle (state, payload) {
-      const { pageTitle } = payload
-      state.pageTitle = pageTitle
+    setPageTitle(state, payload) {
+      const { pageTitle } = payload;
+      state.pageTitle = pageTitle;
     },
 
-    setLoading (state, payload) {
-      const { stringPath, isLoading } = payload
-      _.set(state, `${stringPath}.loading`, isLoading)
+    setLoading(state, payload) {
+      const { stringPath, isLoading } = payload;
+      _.set(state, `${stringPath}.loading`, isLoading); // TODO: Object.assign()
     },
 
-    setInspectedGraph (state, payload) {
-      const { inspectedGraph } = payload
+    setInspectedGraph(state, payload) {
+      const { inspectedGraph } = payload;
       Object.keys(state.graphs).forEach((graphName) => {
-        state.graphs[graphName].isInspected = false
-      })
-      state.graphs[inspectedGraph].isInspected = true
+        state.graphs[graphName].isInspected = false;
+      });
+      state.graphs[inspectedGraph].isInspected = true;
     },
 
-    setSelectedScale (state, payload) {
-      const { graphName, selectedScale } = payload
-      state.graphs[graphName].selectedScale = selectedScale
+    setSelectedScale(state, payload) {
+      const { graphName, selectedScale } = payload;
+      state.graphs[graphName].selectedScale = selectedScale;
     },
 
-    setSelectedQuery (state, payload) {
-      const { graphName, selectedQuery } = payload
-      state.graphs[graphName].selectedQuery = selectedQuery
-    }
+    setSelectedQuery(state, payload) {
+      const { graphName, selectedQuery } = payload;
+      state.graphs[graphName].selectedQuery = selectedQuery;
+    },
   },
   getters: {
     pageTitle: state => state.pageTitle,
 
-    loading: state => stringPath => _.get(state, `${stringPath}.loading`),
+    loading: state => stringPath => _.get(state, `${stringPath}.loading`), // TODO: find alternative
 
-    inspectedGraph (state) {
+    inspectedGraph(state) {
       // retrieves and returns title of the only one graph that has its isInspected value set to true
       // existence of only one such graph is guaranteed by the mutaton's implementation
-      return Object.keys(_.pickBy(state.graphs, (value, _key) => value.isInspected === true))[0]
+      // eslint-disable-next-line no-unused-vars
+      return Object.keys(_.pickBy(state.graphs, (value, _key) => value.isInspected === true))[0];
     },
 
     selectedScale: state => graphName => state.graphs[graphName].selectedScale,
 
-    selectedQuery: state => graphName => state.graphs[graphName].selectedQuery
-  }
-})
+    selectedQuery: state => graphName => state.graphs[graphName].selectedQuery,
+  },
+});

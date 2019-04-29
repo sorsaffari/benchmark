@@ -1,17 +1,21 @@
 <template>
   <el-aside>
-    <el-menu default-active="overview" class="el-menu-vertical-demo" :router="true">
+    <el-menu
+      default-active="overview"
+      class="el-menu-vertical-demo"
+      :router="true"
+    >
       <div class="logo">
         <img src="assets/grakn-logo.png">
       </div>
       <el-menu-item index="/overview">
-        <i class="el-icon-menu"/>
+        <i class="el-icon-menu" />
         <span slot="title">
           <span>Overview</span>
         </span>
       </el-menu-item>
       <el-menu-item index="/executions">
-        <i class="el-icon-document"/>
+        <i class="el-icon-document" />
         <span slot="title">
           <span>Executions</span>
         </span>
@@ -22,11 +26,11 @@
 
 <script>
 export default {
-  data () {
-    return {}
+  data() {
+    return {};
   },
-  methods: {}
-}
+  methods: {},
+};
 </script>
 
 <style scoped lang="scss">

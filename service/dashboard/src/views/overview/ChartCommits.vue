@@ -125,7 +125,7 @@ export default {
       });
 
       this.$router.push({
-        path: `inspect/${args.data.executionId}`,
+        path: `inspect/${args.data.executionId}?graph=${this.graphName}&scale=${this.selectedScale}&query=${currentQuery}`,
       });
     },
 

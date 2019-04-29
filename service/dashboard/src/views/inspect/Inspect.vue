@@ -83,22 +83,20 @@ export default {
   data() {
     return {
       executionId: this.$route.params.executionId,
+      currentGraph: this.$route.query.graph,
+      currentScale: parseInt(this.$route.query.scale),
+      currentQuery: this.$route.query.query,
       execution: {},
       executionSpans: [],
       graphs: [],
     };
   },
 
-  computed: {
-    currentGraph() { return this.$store.getters.inspectedGraph; },
-    currentScale() { return this.$store.getters.selectedScale(this.currentGraph); },
-    currentQuery() { return this.$store.getters.selectedQuery(this.currentGraph); },
-  },
-
   created() {
     this.fetchExecutionDetails();
     this.fetchExecutionSpans();
   },
+
   methods: {
     fetchExecutionDetails() {
       BenchmarkClient.getExecutions(

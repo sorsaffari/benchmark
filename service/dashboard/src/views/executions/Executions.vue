@@ -1,8 +1,5 @@
 <template>
-  <section
-    v-loading="loading"
-    class="el-container is-vertical page-container"
-  >
+  <section v-loading="loading" class="el-container is-vertical page-container">
     <!-- <el-row>
         <el-popover
           v-model="popoverVisible"
@@ -43,41 +40,118 @@
         </el-popover>
         <el-button type="success" circle icon="el-icon-plus"></el-button>
     </el-row>-->
-    <execution-card
-      v-for="exec in executions"
-      :key="exec.id"
-      :execution="exec"
-    />
+
+    <el-header>
+      <sortby-selector
+        title="Sort by"
+        :items="columns"
+        :defaultItem="{ text: 'Started At', value: 'executionStartedAt'}"
+        @item-selected="onSortbySelection"
+      />
+      <el-radio-group value="Asc" size="mini" @change="onSortTypeSelection">
+        <el-radio-button name="sort-type" label="Asc"></el-radio-button>
+        <el-radio-button name="sort-type" label="Desc"></el-radio-button>
+      </el-radio-group>
+    </el-header>
+
+    <div class="executions-list">
+      <execution-card v-for="exec in executions" :key="exec.id" :execution="exec"/>
+    </div>
   </section>
 </template>
 
 <script>
-import ExecutionCard from './ExecutionCard.vue';
-import BenchmarkClient from '@/util/BenchmarkClient';
+import ExecutionCard from "./ExecutionCard.vue";
+import BenchmarkClient from "@/util/BenchmarkClient";
+import SortbySelector from "@/components/Selector.vue";
 
 export default {
-  name: 'ExecutionsPage',
-  components: { ExecutionCard },
+  name: "ExecutionsPage",
+  components: { SortbySelector, ExecutionCard },
   data() {
     return {
       loading: true,
-      popoverVisible: false,
+      // popoverVisible: false,
       executions: [],
-      newExecution: {
-        commit: undefined,
-        repoUrl: undefined,
-      },
+      columns: [
+        {
+          text: "Commit",
+          value: "commit"
+        },
+        {
+          text: "Status",
+          value: "status"
+        },
+        {
+          text: "Initialised At",
+          value: "executionInitialisedAt"
+        },
+        {
+          text: "Started At",
+          value: "executionStartedAt"
+        },
+        {
+          text: "Completed At",
+          value: "executionCompletedAt"
+        }
+      ]
+      // newExecution: {
+      //   commit: undefined,
+      //   repoUrl: undefined
+      // },
     };
   },
+
   created() {
+    this.columns = [
+      {
+        text: "Commit",
+        value: "commit"
+      },
+      {
+        text: "Status",
+        value: "status"
+      },
+      {
+        text: "Initialised At",
+        value: "executionInitialisedAt"
+      },
+      {
+        text: "Started At",
+        value: "executionStartedAt"
+      },
+      {
+        text: "Completed At",
+        value: "executionCompletedAt"
+      }
+    ];
+
     BenchmarkClient.getExecutions(
-      '{ executions { id prMergedAt prNumber prUrl commit status executionInitialisedAt executionStartedAt executionCompletedAt vmName } }',
-    ).then((execs) => {
+      "{ executions { id " +
+        this.columns.map(item => item.value).join(" ") +
+        "} }"
+    ).then(execs => {
       this.executions = execs.data.executions;
       this.loading = false;
     });
   },
+
   methods: {
+    onSortbySelection(column) {
+      this.executions.sort(function(a, b) {
+        var x = a[column];
+        var y = b[column];
+        if (x === null) return 1;
+        if (y === null) return -1;
+        if (x === y) return 0;
+        if (x < y) return -1;
+        if (x > y) return 1;
+      });
+    },
+
+    onSortTypeSelection() {
+      this.executions.reverse();
+    }
     // triggerExecution() {
     //   BenchmarkClient.triggerExecution(this.newExecution)
     //     .then(() => {
@@ -95,16 +169,36 @@ export default {
     //     });
     //   this.newExecution.commit = undefined;
     // }
-  },
+  }
 };
 </script>
 
-<style scoped>
-section {
-  min-height: 100%;
+<style scoped lang="scss">
+@import "./src/assets/css/variables.scss";
+
+.executions-list {
+  margin-top: $height-topBar;
 }
 
-.cards-row {
-  margin-bottom: 20px;
+.el-header {
+  height: $height-topBar;
+  width: 100%;
+
+  background-color: $color-default-bg;
+  border-bottom: 1px solid $color-light-border;
+
+  align-items: center;
+  display: flex;
+  margin-top: -$margin-default;
+  margin-right: -$margin-default;
+  margin-bottom: $margin-default;
+  margin-left: -$margin-default;
+  position: fixed;
+  padding: $padding-default;
+  z-index: 2;
+
+  .el-radio-group {
+    margin-left: $margin-default;
+  }
 }
 </style>

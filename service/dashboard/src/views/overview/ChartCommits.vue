@@ -9,10 +9,11 @@
     >
       <span>{{ graphName | formatTitle }}</span>
       <div class="actions">
-        <selector-scale
-          :scales="scales"
-          :graph-name="graphName"
-          @scale-selected="onScaleSelection"
+        <scale-selector
+          title="Scale"
+          :items="scales"
+          :defaultItem="scales[0]"
+          @item-selected="onScaleSelection"
         />
       </div>
     </div>
@@ -32,10 +33,10 @@ import 'echarts/lib/chart/line';
 import 'echarts/lib/component/tooltip';
 import 'echarts/lib/component/legend';
 import 'echarts/lib/component/legendScroll';
-import SelectorScale from '@/components/SelectorScale.vue';
+import ScaleSelector from '@/components/Selector.vue';
 
 export default {
-  components: { EChart, SelectorScale },
+  components: { EChart, ScaleSelector },
 
   filters: {
     formatTitle(graphName) {
@@ -85,9 +86,9 @@ export default {
   async created() {
     this.scales = [
       ...new Set(this.executionSpans.map(span => span.tags.graphScale)),
-    ].sort((a, b) => a - b);
+    ].sort((a, b) => a - b).map(scale => ({ text: scale, value: scale }));
 
-    this.selectedScale = this.scales[0];
+    this.selectedScale = this.scales[0].value;
 
     this.querySpans = await fetchQuerySpans(this.executionSpans);
     this.queries = uniqueQueriesSortedArray(this.querySpans);

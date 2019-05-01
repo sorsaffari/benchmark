@@ -11,10 +11,9 @@
       :name="graphName"
     >
       <graph-tab
-        :graph="graphName"
-        :execution-spans="getFilterSpans(graphName)"
-        :overview-query="getPreSelectedQuery(graphName)"
-        :overview-scale="getPreSelectedScale(graphName)"
+        :spans="getFilterSpans(graphName)"
+        :pre-selected-query="getPreSelectedQuery(graphName)"
+        :pre-selected-scale="getPreSelectedScale(graphName)"
       />
     </el-tab-pane>
   </el-tabs>

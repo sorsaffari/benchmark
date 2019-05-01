@@ -5,45 +5,62 @@
       justify="end"
     >
       <scale-selector
-        :scales="scales"
-        :current-scale="currentScale"
-        @selected-scale="(scale)=>{currentScale=scale}"
+        title="Scale"
+        :items="scales.map(scale => ({ text: scale, value: scale }))"
+        :defaultItem="{ text: selectedScale, value: selectedScale }"
+        @item-selected="this.selectedScale = scale;"
       />
     </el-row>
     <queries-table
       v-for="scale in scales"
-      v-show="scale==currentScale"
+      v-show="scale==selectedScale"
       :key="scale"
+      :execution-spans="spans"
+      :overview-query="preSelectedQuery"
       :current-scale="scale"
-      :execution-spans="executionSpans"
-      :overview-query="overviewQuery"
     />
   </div>
 </template>
 <script>
 
 import QueriesTable from './QueriesTable.vue';
-import ScaleSelector from '@/components/ScaleSelector.vue';
+import ScaleSelector from '@/components/Selector.vue';
+
 
 export default {
   name: 'GraphTab',
+
   components: { ScaleSelector, QueriesTable },
+
   props: {
-    graph: String,
-    executionSpans: Array,
-    overviewScale: Number,
-    overviewQuery: String,
+    spans: {
+      type: Array,
+      required: true
+    },
+
+    preSelectedQuery: {
+      type: String,
+      required: false
+    },
+
+    preSelectedScale: {
+      type: Number,
+      required: false
+    },
   },
+
   data() {
     return {
       scales: [],
-      currentScale: null,
+      selectedScale: null,
     };
   },
+
   created() {
-    this.scales = [...new Set(this.executionSpans.map(span => span.tags.graphScale))];
-    this.scales.sort((a, b) => a - b);
-    this.currentScale = (this.overviewScale) ? this.overviewScale : this.scales[0];
+    this.scales = [
+      ...new Set(this.spans.map(span => span.tags.graphScale)),
+    ].sort((a, b) => a - b);
+    this.selectedScale = this.preSelectedScale || this.scales[0];
   },
 };
 

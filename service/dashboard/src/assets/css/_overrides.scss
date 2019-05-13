@@ -10,11 +10,27 @@
   }
 }
 
-.el-card.flexed .el-card__body {
+.el-card__body .flexed {
   align-content: center;
   align-items: center;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   vertical-align: baseline;
+}
+
+.el-tabs__content {
+  padding: $padding-default !important;
+}
+
+.cards-list { 
+  .el-card {
+    margin-bottom: $margin-default;
+    overflow: visible;
+    font-size: $font-size-card;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
 }

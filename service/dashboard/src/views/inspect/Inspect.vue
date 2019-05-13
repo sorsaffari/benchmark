@@ -1,12 +1,16 @@
 <template>
   <section>
     <div v-if="execution">
-      <execution-card class="execution-card" :execution="execution" :columns="executionColumns"/>
+      <execution-card
+        class="execution-card"
+        :execution="execution"
+        :columns="executionColumns"
+      />
     </div>
 
     <tabular-view
-      :graph-names="graphNames"
-      :spans="spans"
+      :graphs="graphs"
+      :query-spans="querySpans"
       :pre-selected-graph-name="preSelectedGraphName"
       :pre-selected-query="preSelectedQuery"
       :pre-selected-scale="preSelectedScale"
@@ -15,9 +19,10 @@
 </template>
 
 <script>
-import BenchmarkClient from "@/util/BenchmarkClient";
-import ExecutionCard from "@/views/executions/ExecutionCard.vue";
-import TabularView from "./TabularView/TabularView.vue";
+import BenchmarkClient from '@/util/BenchmarkClient';
+import ExecutionCard from '@/views/executions/ExecutionCard.vue';
+import TabularView from './TabularView/TabularView.vue';
+import ExecutionDataModifiers from '@/util/ExecutionDataModifiers';
 
 export default {
   components: { TabularView, ExecutionCard },
@@ -28,9 +33,9 @@ export default {
 
       execution: null,
 
-      spans: [],
+      graphs: null,
 
-      graphNames: [],
+      querySpans: null,
 
       preSelectedGraphName: this.$route.query.graph,
 
@@ -40,65 +45,69 @@ export default {
 
       executionColumns: [
         {
-          text: "Status",
-          value: "status"
+          text: 'Status',
+          value: 'status',
         },
         {
-          text: "Repository",
-          value: "repoUrl"
+          text: 'Repository',
+          value: 'repoUrl',
         },
         {
-          text: "Commit",
-          value: "commit"
+          text: 'Commit',
+          value: 'commit',
         },
         {
-          text: "PR",
-          value: "prUrl"
+          text: 'PR',
+          value: 'prUrl',
         },
         {
-          text: "Started At",
-          value: "executionStartedAt"
+          text: 'Started At',
+          value: 'executionStartedAt',
         },
         {
-          text: "Completed At",
-          value: "executionCompletedAt"
-        }
-      ]
+          text: 'Completed At',
+          value: 'executionCompletedAt',
+        },
+      ],
     };
   },
 
-  created() {
+  async created() {
     this.fetchExecution();
-    this.fetchSpans();
+    this.fetchQueries();
   },
 
   methods: {
-    fetchExecution() {
-      BenchmarkClient.getExecutions(
-        `{ executionById (id: "${
-          this.executionId
-        }"){ id prNumber
-          ${this.executionColumns.map(column => column.value).join(" ")}
-        } }`
-      ).then(resp => {
-        this.execution = resp.data.executionById;
-      });
+    async fetchExecution() {
+      const executionResp = await BenchmarkClient.getExecutions(
+        `{ executionById (id: "${this.executionId}"){ id prNumber
+          ${this.executionColumns.map(column => column.value).join(' ')}
+        } }`,
+      );
+
+      this.execution = executionResp.data.executionById;
     },
 
-    fetchSpans() {
-      BenchmarkClient.getSpans(
+    async fetchQueries() {
+      const graphsResp = await BenchmarkClient.getSpans(
         `{ executionSpans( executionName: "${
           this.executionId
-        }"){ id name duration tags { graphType executionName graphScale }} }`
-      ).then(resp => {
-        this.spans = resp.data.executionSpans;
+        }"){ id name duration tags { graphType executionName graphScale }} }`,
+      );
+      const graphs = graphsResp.data.executionSpans;
+      this.graphs = ExecutionDataModifiers.flattenGraphs(graphs);
 
-        this.graphNames = Array.from(
-          new Set(this.spans.map(span => span.tags.graphType))
-        );
-      });
-    }
-  }
+      const queriesResponse = await Promise.all(
+        graphs.map(graph => BenchmarkClient.getSpans(
+          `{ querySpans( parentId: "${
+            graph.id
+          }" limit: 500){ id parentId name duration tags { query type repetition repetitions }} }`,
+        )),
+      );
+      const querySpans = queriesResponse.map(resp => resp.data.querySpans);
+      this.querySpans = ExecutionDataModifiers.flattenQuerySpans(querySpans);
+    },
+  },
 };
 </script>
 

@@ -1,31 +1,29 @@
 <template>
-  <div>
+  <div v-if="graphs && querySpans">
     <el-row
       type="flex"
       justify="end"
+      class="queries-action-bar"
     >
-      <scale-selector
-        title="Scale"
-        :items="scales.map(scale => ({ text: scale, value: scale }))"
-        :defaultItem="{ text: selectedScale, value: selectedScale }"
-        @item-selected="this.selectedScale = scale;"
-      />
+      <div class="action-item">
+        <scale-selector
+          title="Scale"
+          :items="scales.map(scale => ({ text: scale, value: scale }))"
+          :default-item="{ text: selectedScale, value: selectedScale }"
+          @item-selected="(scale) => { selectedScale = scale; }"
+        />
+      </div>
     </el-row>
+
     <queries-table
-      v-for="scale in scales"
-      v-show="scale==selectedScale"
-      :key="scale"
-      :execution-spans="spans"
-      :overview-query="preSelectedQuery"
-      :current-scale="scale"
+      :pre-selected-query="preSelectedQuery"
+      :scaled-query-spans="scaledQueries"
     />
   </div>
 </template>
 <script>
-
-import QueriesTable from './QueriesTable.vue';
+import QueriesTable from './Queries.vue';
 import ScaleSelector from '@/components/Selector.vue';
-
 
 export default {
   name: 'GraphTab',
@@ -33,19 +31,31 @@ export default {
   components: { ScaleSelector, QueriesTable },
 
   props: {
-    spans: {
+    graphs: {
       type: Array,
-      required: true
+      required: true,
+    },
+
+    graphType: {
+      type: String,
+      required: true,
+    },
+
+    querySpans: {
+      type: Array,
+      required: true,
     },
 
     preSelectedQuery: {
       type: String,
-      required: false
+      required: false,
+      default: null,
     },
 
     preSelectedScale: {
       type: Number,
-      required: false
+      required: false,
+      default: null,
     },
   },
 
@@ -56,12 +66,40 @@ export default {
     };
   },
 
+  computed: {
+    scaledQueries() {
+      const graphIds = this.graphs.filter(graph => graph.scale === this.selectedScale).map(graph => graph.id);
+      const scaledQueries = this.querySpans.filter(querySpan => graphIds.includes(querySpan.parentId));
+      scaledQueries.sort((a, b) => (a.value > b.value ? 1 : -1));
+      return scaledQueries;
+    },
+  },
+
   created() {
-    this.scales = [
-      ...new Set(this.spans.map(span => span.tags.graphScale)),
-    ].sort((a, b) => a - b);
+    this.scales = [...new Set(this.graphs.map(graph => graph.scale))].sort((a, b) => a - b);
     this.selectedScale = this.preSelectedScale || this.scales[0];
   },
 };
-
 </script>
+
+<style scoped lang="scss">
+@import "./src/assets/css/variables.scss";
+
+.queries-action-bar {
+  height: 39px;
+
+  border-bottom: 1px solid $color-light-border;
+
+  align-items: center;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -$margin-default;
+  margin-right: -$margin-default;
+  margin-bottom: $margin-default;
+  margin-left: -$margin-default;
+
+  .action-item {
+    padding-right: $padding-default;
+  }
+}
+</style>

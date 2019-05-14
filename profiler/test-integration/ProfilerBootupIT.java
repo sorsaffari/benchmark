@@ -38,8 +38,8 @@ import java.util.UUID;
 import static graql.lang.Graql.type;
 import static graql.lang.Graql.var;
 
-public class ProfilerBootupTestIntegration {
-    private final static Path WEB_CONTENT_CONFIG_PATH = Paths.get("profiler/test/resources/web_content/web_content_config_test.yml");
+public class ProfilerBootupIT {
+    private final static Path WEB_CONTENT_DATA_GEN_CONFIG_PATH = Paths.get("profiler/test-integration/resources/web_content/web_content_config_data_gen.yml");
 
     @Rule
     public final ExpectedException expectedException = ExpectedException.none();
@@ -58,23 +58,9 @@ public class ProfilerBootupTestIntegration {
 
     @After
     public void tearDown() {
-        client.keyspaces().delete(keyspace);
         session.close();
-    }
-
-    @Test
-    public void whenProvidingAbsolutePathToExistingConfig_benchmarkShouldStart() {
-        String[] args = new String[]{"--config", WEB_CONTENT_CONFIG_PATH.toAbsolutePath().toString(), "--execution-name", "grakn-benchmark-test"};
-        CommandLine commandLine = BenchmarkArguments.parse(args);
-        GraknBenchmark graknBenchmark = new GraknBenchmark(commandLine);
-    }
-
-    @Test
-    public void whenProvidingRelativePathToExistingConfig_benchmarkShouldStart() {
-        String[] args = new String[]{"--config", "web_content_config_test.yml", "--execution-name", "grakn-benchmark-test"};
-        System.setProperty("working.dir", WEB_CONTENT_CONFIG_PATH.getParent().toString());
-        CommandLine commandLine = BenchmarkArguments.parse(args);
-        GraknBenchmark graknBenchmark = new GraknBenchmark(commandLine);
+        client.keyspaces().delete(keyspace);
+        client.close();
     }
 
     @Test
@@ -87,7 +73,7 @@ public class ProfilerBootupTestIntegration {
 
         expectedException.expect(BootupException.class);
         expectedException.expectMessage("is not empty");
-        String[] args = new String[]{"--config", WEB_CONTENT_CONFIG_PATH.toAbsolutePath().toString(), "--keyspace", keyspace, "--execution-name", "testing"};
+        String[] args = new String[]{"--config", WEB_CONTENT_DATA_GEN_CONFIG_PATH.toAbsolutePath().toString(), "--keyspace", keyspace, "--execution-name", "testing"};
         CommandLine commandLine = BenchmarkArguments.parse(args);
         GraknBenchmark graknBenchmark = new GraknBenchmark(commandLine);
         graknBenchmark.start();
@@ -104,7 +90,7 @@ public class ProfilerBootupTestIntegration {
 
         expectedException.expect(BootupException.class);
         expectedException.expectMessage("is not empty");
-        String[] args = new String[] {"--config", WEB_CONTENT_CONFIG_PATH.toAbsolutePath().toString(), "--keyspace", keyspace, "--execution-name", "testing"};
+        String[] args = new String[] {"--config", WEB_CONTENT_DATA_GEN_CONFIG_PATH.toAbsolutePath().toString(), "--keyspace", keyspace, "--execution-name", "testing"};
         CommandLine commandLine = BenchmarkArguments.parse(args);
         GraknBenchmark graknBenchmark = new GraknBenchmark(commandLine);
         graknBenchmark.start();

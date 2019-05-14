@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Stream;
 
+import static grakn.benchmark.profiler.util.ConcurrentDataLoader.concurrentDataImport;
 import static graql.lang.Graql.parseList;
 
 /**
@@ -128,7 +129,7 @@ public class GraknBenchmark {
                     LOG.info("Generating graph to scale... " + numConcepts);
                     dataGenerator.generate(numConcepts);
                     timer.startQueryTimeTracking();
-                    threadedProfiler.processStaticQueries(config.numQueryRepetitions(), numConcepts);
+                    threadedProfiler.processQueries(config.numQueryRepetitions(), numConcepts);
                     timer.endQueryTimeTracking();
                     timer.printTimings();
                 }
@@ -142,7 +143,12 @@ public class GraknBenchmark {
             }
 
 
-        } else if (config.loadSchema()) {  // USECASE:  Load Schema + Profile running queries from config file
+        } else if (config.loadSchema()) {
+            /*
+            TWO uses cases:
+            2. Load schema, then profile without preloading data (graph may grow while being profiled)
+            1. Load schema + static graph, then profile
+             */
 
             GraknClient tracingClient = TracingGraknClient.get(config.graknUri());
             List<String> keyspaces;
@@ -154,9 +160,15 @@ public class GraknBenchmark {
                 keyspaces = Collections.singletonList(config.getKeyspace());
             }
 
-            ThreadedProfiler threadedProfiler = new ThreadedProfiler(tracingClient, keyspaces, config);
             int numConcepts = 0;
-            threadedProfiler.processStaticQueries(config.numQueryRepetitions(), numConcepts);
+            if (config.staticDataImport()) {
+                // USECASE 2 - see above
+                // import the static data into the keyspaces. Tracing this step is not enabled right now
+                numConcepts = concurrentDataImport(tracingClient, keyspaces, config.staticDataImportQueries(),   8);
+            }
+
+            ThreadedProfiler threadedProfiler = new ThreadedProfiler(tracingClient, keyspaces, config);
+            threadedProfiler.processQueries(config.numQueryRepetitions(), numConcepts);
             threadedProfiler.cleanup();
             tracingClient.close();
 
@@ -172,7 +184,7 @@ public class GraknBenchmark {
 
 //            int numConcepts = threadedProfiler.aggregateCount();
             int numConcepts = 0; // TODO re-add this properly for concurrent clients
-            threadedProfiler.processStaticQueries(config.numQueryRepetitions(), numConcepts);
+            threadedProfiler.processQueries(config.numQueryRepetitions(), numConcepts);
             threadedProfiler.cleanup();
             client.close();
         }
@@ -237,6 +249,7 @@ public class GraknBenchmark {
             tx.commit();
         }
     }
+
 
 
     /**

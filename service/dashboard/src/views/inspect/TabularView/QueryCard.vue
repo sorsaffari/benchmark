@@ -1,6 +1,9 @@
 <template>
-  <el-card @click.native="fetchSteps">
-    <div class="flexed">
+  <el-card>
+    <div
+      class="queryCardDetails flexed"
+      @click="toggleStepsTable()"
+    >
       <el-tooltip
         class="item"
         effect="dark"
@@ -41,14 +44,39 @@
         >{{ maxSpan.duration | fixedMs }}/{{ maxSpan.rep + 1 | ordinalise }}</span>
       </el-tooltip>
     </div>
+
+    <section
+      v-if="expanded"
+      class="stepsTable"
+    >
+      <div class="flexed tableHeader">
+        <span style="width: 320px;">Query</span>
+        <span style="width: 115px;">Min/Rep</span>
+        <span style="width: 90px;">Median/Reps</span>
+        <span style="width: 115px;">Max/Rep</span>
+      </div>
+      <step-line
+        v-for="stepNumber in stepNumbers"
+        :key="stepNumber"
+        :step="filterStepSpans(stepNumber)[0].name"
+        :step-spans="filterStepSpans(stepNumber)"
+        :padding=0
+      />
+    </section>
   </el-card>
 </template>
 
 <script>
 import BenchmarkClient from '@/util/BenchmarkClient';
+import StepLine from './StepLine.vue';
+import EDF from '@/util/ExecutionDataFormatters';
 import ordinal from 'ordinal';
 
+const { flattenStepSpans, attachRepsToChildSpans } = EDF;
+
 export default {
+  components: { StepLine },
+
   filters: {
     fixedMs(num) {
       return `${Number(num / 1000).toFixed(3)}`;
@@ -72,7 +100,9 @@ export default {
 
   data() {
     return {
-      steps: null,
+      expanded: false,
+      stepSpans: null,
+      stepNumbers: 0,
     };
   },
 
@@ -106,36 +136,30 @@ export default {
   },
 
   methods: {
-
-    fetchSteps() {
-      console.log('clicked');
-      BenchmarkClient.getSpans(
-        `{ childrenSpans( parentId: [${this.querySpans
-          .map(querySpan => `"${querySpan.id}"`)
-          .join()}] limit: 1000){ id name duration parentId tags { childNumber }} }`,
-      ).then((resp) => {
-        // console.log(resp.data.childrenSpans)
-        this.steps = this.attachRepetition(resp.data.childrenSpans);
-        // this.stepNumbers = [...new Set(this.children.map(child => child.tags.childNumber))];
-        // this.stepNumbers.sort((a, b) => a - b);
-      });
+    toggleStepsTable() {
+      this.expanded = !this.expanded;
+      if (!this.expanded) return;
+      this.fetchStepSpans();
     },
 
-    attachRepetition(childrenSpans) {
-      // Children spans don't have the tags repetition and repetitions, so we attach them here taking the values from parent
-      return childrenSpans.map((span) => {
-        const parentTag = this.spans.filter(
-          parent => parent.id === span.parentId,
-        )[0].tags;
-        // console.log(parentTag);
-        return Object.assign(
-          {
-            repetition: parentTag.repetition,
-            repetitions: parentTag.repetitions,
-          },
-          span,
-        );
-      });
+    async fetchStepSpans() {
+      const querySpanIds = this.querySpans.map(querySpan => `"${querySpan.id}"`).join();
+
+      const stepSpansResp = await BenchmarkClient.getSpans(
+        `{ childrenSpans( parentId: [
+          ${querySpanIds}
+          ] limit: 1000){ id name duration parentId tags { childNumber }} }`,
+      );
+      let stepSpans = stepSpansResp.data.childrenSpans;
+      stepSpans = flattenStepSpans(stepSpans, this.querySpans);
+      this.stepSpans = attachRepsToChildSpans(stepSpans, this.querySpans);
+      this.stepNumbers = [
+        ...new Set(this.stepSpans.map(stepSpan => stepSpan.order)),
+      ].sort((a, b) => a - b);
+    },
+
+    filterStepSpans(stepNumber) {
+      return this.stepSpans.filter(stepSpan => stepSpan.order === stepNumber);
     },
   },
 };
@@ -143,6 +167,32 @@ export default {
 
 <style lang="scss" scoped>
 @import "./src/assets/css/variables.scss";
+
+.queryCardDetails {
+  cursor: pointer;
+}
+
+.stepsTable {
+  margin-top: $margin-most;
+  margin-right: -$margin-default;
+  margin-bottom: -$margin-default;
+  margin-left: -$margin-default;
+
+  .tableHeader {
+    border-bottom: 1px solid $color-border-light;
+    padding-bottom: $padding-least;
+
+    span {
+      color: $color-text-gray;
+      font-size: $font-size-table-header;
+      font-weight: 600;
+    }
+  }
+
+  span {
+    text-align: center;
+  }
+}
 
 .spans {
   margin-top: $margin-default;

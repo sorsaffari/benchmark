@@ -147,7 +147,6 @@ export default {
         if (x === y) return 0;
         if (sortType === 'Asc') return x < y ? -1 : 1;
         if (sortType === 'Desc') return x < y ? 1 : -1;
-        return false;
       });
     },
 
@@ -186,8 +185,8 @@ export default {
   height: $height-topBar;
   width: 100%;
 
-  background-color: $color-default-bg;
-  border-bottom: 1px solid $color-light-border;
+  background-color: $color-bg-default;
+  border-bottom: 1px solid $color-border-light;
 
   align-items: center;
   display: flex;

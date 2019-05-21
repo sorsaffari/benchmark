@@ -1,0 +1,13 @@
+name: "Loading Test"
+description: "Loading test - 1 million entities"
+schema: "loading_schema.gql"
+dataImportFile: "loading_data.gql"
+repeatsPerQuery: 2
+
+queries: "queries_read.yml"
+deleteInsertedConcepts: false
+traceDeleteInsertedConcepts: false
+
+concurrency:
+  clients: 1
+  uniqueKeyspaces: false

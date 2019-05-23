@@ -87,7 +87,8 @@ class QueryProfiler implements Runnable {
             concurrentExecutionSpan.tag("description", description);
             concurrentExecutionSpan.tag("executionName", executionName);
             concurrentExecutionSpan.tag("concurrentClient", Integer.toString(concurrentId));
-            concurrentExecutionSpan.tag("graphType", dataGenerator != null? dataGenerator : dataImport);
+            String graphType = dataGenerator != null ? dataGenerator : (dataImport != null ? dataImport : "non data gen/import: " + configName);
+            concurrentExecutionSpan.tag("graphType", graphType);
             concurrentExecutionSpan.tag("queryRepetitions", Integer.toString(repetitions));
             concurrentExecutionSpan.tag("graphScale", Integer.toString(numConcepts));
             concurrentExecutionSpan.tag("configurationName", configName);

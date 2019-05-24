@@ -178,14 +178,14 @@ public class GraknBenchmark {
                 throw new BootupException("Cannot currently perform profiling into more than 1 keyspace");
             }
 
-            GraknClient client = new GraknClient(config.graknUri());
-            ThreadedProfiler threadedProfiler = new ThreadedProfiler(client, Collections.singletonList(config.getKeyspace()), config);
+            GraknClient tracingClient = TracingGraknClient.get(config.graknUri());
+            ThreadedProfiler threadedProfiler = new ThreadedProfiler(tracingClient, Collections.singletonList(config.getKeyspace()), config);
 
 //            int numConcepts = threadedProfiler.aggregateCount();
             int numConcepts = 0; // TODO re-add this properly for concurrent clients
             threadedProfiler.processQueries(config.numQueryRepetitions(), numConcepts);
             threadedProfiler.cleanup();
-            client.close();
+            tracingClient.close();
         }
     }
 

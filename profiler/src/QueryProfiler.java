@@ -119,7 +119,7 @@ class QueryProfiler implements Runnable {
                         GraknClient.Transaction tx = session.transaction().write();
                         List<? extends Answer> answer = tx.execute(query);
 
-                        if (query instanceof GraqlInsert) {
+                        if (deleteInsertedConcepts && query instanceof GraqlInsert) {
                             insertedConceptIds = InsertQueryAnalyser.getInsertedConcepts((GraqlInsert)query, (List<ConceptMap>)answer)
                                         .stream().map(concept -> concept.id().toString())
                                         .collect(Collectors.toSet());

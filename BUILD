@@ -54,8 +54,7 @@ assemble_zip(
         "//common/configuration/scenario:reasoning/transitivity_data.gql": "scenario/reasoning/transitivity_data.gql",
         "//common/configuration/scenario:reasoning/config_read.yml": "scenario/reasoning/config_read.yml",
         "//common/configuration/scenario:reasoning/transitivity_schema.gql": "scenario/reasoning/transitivity_schema.gql",
-        "//common/configuration/scenario:loading/queries_read.yml": "scenario/loading/queries_read.yml",
-        "//common/configuration/scenario:loading/loading_data.gql": "scenario/loading/loading_data.gql",
+        "//common/configuration/scenario:loading/loading_data_queries.yml": "scenario/loading/loading_data_queries.yml",
         "//common/configuration/scenario:loading/config_read.yml": "scenario/loading/config_read.yml",
         "//common/configuration/scenario:loading/loading_schema.gql": "scenario/loading/loading_schema.gql",
 

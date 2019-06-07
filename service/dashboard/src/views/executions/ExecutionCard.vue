@@ -117,6 +117,7 @@ export default {
       return repoUrl.substring(19);
     },
   },
+
   props: {
     execution: {
       type: Object,
@@ -160,6 +161,9 @@ export default {
                 message: 'The execution was deleted successfully.',
                 type: 'success',
               });
+              // have the parent component re-fetch all executions which should now exclude
+              // this deleted execution
+              this.$emit('reload-required');
             })
             .catch(() => {
               this.$message({
@@ -183,6 +187,9 @@ export default {
                 message: 'The execution was stopped successfully.',
                 type: 'success',
               });
+              // have the parent component re-fetch all executions which should now have
+              // the updated status for this execution
+              this.$emit('reload-required');
             })
             .catch(() => {
               this.$message({

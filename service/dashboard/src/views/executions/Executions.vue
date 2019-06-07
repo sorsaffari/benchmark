@@ -74,6 +74,7 @@
         :execution="exec"
         :columns="columns"
         :click-path="'inspect/' + exec.id"
+        @reload-required="fetchExecutions"
       />
     </div>
   </section>
@@ -94,6 +95,8 @@ export default {
       // popoverVisible: false,
 
       executions: [],
+
+      sortColumn: 'executionInitialisedAt',
 
       sortType: 'Desc',
 
@@ -127,18 +130,23 @@ export default {
   },
 
   async created() {
-    const executionsResp = await BenchmarkClient.getExecutions(
-      `{ executions { id vmName repoUrl ${
-        this.columns.map(item => item.value).join(' ')
-      }} }`,
-    );
-    this.executions = executionsResp.data.executions;
-    this.sortExecutions('executionInitialisedAt');
-    this.loading = false;
+    await this.fetchExecutions();
   },
 
   methods: {
+    async fetchExecutions() {
+      const executionsResp = await BenchmarkClient.getExecutions(
+        `{ executions { id vmName ${
+          this.columns.map(item => item.value).join(' ')
+        }} }`,
+      );
+      this.executions = executionsResp.data.executions;
+      this.sortExecutions(this.sortColumn);
+      this.loading = false;
+    },
+
     sortExecutions(column) {
+      this.sortColumn = column;
       const { sortType } = this;
       this.executions.sort((a, b) => {
         const x = a[column];

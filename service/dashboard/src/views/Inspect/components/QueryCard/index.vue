@@ -29,7 +29,7 @@
         >
           <div class="queryCardDetail">
             <p>
-              {{ spansSortedByRep[0].duration | fixedMs }} ms
+              {{ spanOfFirstRep.duration | fixedMs }} ms
             </p>
           </div>
         </el-tooltip>
@@ -187,9 +187,8 @@ export default {
   },
 
   computed: {
-    spansSortedByRep() {
-      const sortedSpans = this.querySpans;
-      return sortedSpans.sort((a, b) => (a.rep > b.reo ? 1 : -1));
+    spanOfFirstRep() {
+      return this.querySpans.filter(span => span.rep === 0)[0];
     },
 
     spansSortedByDuration() {

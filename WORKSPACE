@@ -22,10 +22,17 @@ workspace(name = "benchmark")
 # Grakn Labs dependencies #
 ###########################
 
-load("//dependencies/graknlabs:dependencies.bzl", "graknlabs_grakn_core", "graknlabs_build_tools", "graknlabs_client_java")
+load(
+    "//dependencies/graknlabs:dependencies.bzl",
+    "graknlabs_build_tools",
+    "graknlabs_grakn_core",
+    "graknlabs_client_java",
+    "graknlabs_protocol"
+)
 graknlabs_build_tools()
 graknlabs_grakn_core()
 graknlabs_client_java()
+graknlabs_protocol()
 
 load("@graknlabs_build_tools//distribution:dependencies.bzl", "graknlabs_bazel_distribution")
 graknlabs_bazel_distribution()

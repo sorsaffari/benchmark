@@ -16,7 +16,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-workspace(name = "benchmark")
+workspace(name = "graknlabs_benchmark")
 
 ###########################
 # Grakn Labs dependencies #

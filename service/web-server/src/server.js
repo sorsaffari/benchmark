@@ -1,14 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const elasticsearch = require('elasticsearch');
-
+const https = require('https');
 const config = require('./config');
 const utils = require('./Utils');
 const ExecController = require('./ExecutionsController');
 const SpansController = require('./SpansController');
-
 const history = require('connect-history-api-fallback');
-
 const Octokit = require('@octokit/rest');
 const cookieSession = require('cookie-session');
 
@@ -22,10 +20,15 @@ const spans = new SpansController(esClient);
 
 const app = module.exports = express();
 
-utils.checkForEnvVariables();
+// setup and check for environment variables
+if (process.env.NODE_ENV === "development")
+    require('dotenv').config({ path: '../.env' });
+else
+    require('dotenv').config({ path: '/home/ubuntu/.env' });
 
 const CLIENT_ID = process.env.GITHUB_CLIENT_ID;
 const CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
+const GRABL_TOKEN = process.env.GITHUB_GRABL_TOKEN;
 
 // with the following setting, we are allowing the cookie middleware to trust the X-Forwarded-Proto header and
 // allow secure cookies being sent over plain HTTP, provided that X-Forwarded-Proto is set to https
@@ -43,14 +46,13 @@ app.use(bodyParser.json())
 /**
  * Authentication end-points and middleware
  */
-
-const { getGithubUserAccessToken, getGithubUserId, isUserGraknLabsMember } = utils;
+const { getGraknLabsMembers, getGithubUserId, getGithubUserAccessToken } = utils;
 
 // middleware to determine if the user is authenticated and
 // is a member of the graknlabs Github organisation
-const verifyIdentity = async (req, res, next) => {
+const verifyIdentity = (req, res, next) => {
     const userId = req.session.userId;
-    const isVerified = userId && (await isUserGraknLabsMember(userId));
+    const isVerified = userId && graknLabsMembers.some((member) => member.id === userId);
     if (isVerified) next();
     else res.status(401).json({ authorised: false });
 }
@@ -59,9 +61,9 @@ app.get('/auth/callback', async (req, res) => {
 
     try {
         const oauthCode = req.query.code;
-        const accessToken = await getGithubUserAccessToken(oauthCode);
+        const accessToken = await getGithubUserAccessToken(CLIENT_ID, CLIENT_SECRET, GRABL_TOKEN, oauthCode);
         const userId = await getGithubUserId(accessToken);
-        const isAuthorised = await isUserGraknLabsMember(userId);
+        const isAuthorised = graknLabsMembers.some((member) => member.id === userId);
 
         if (isAuthorised) {
             req.session.userId = userId;
@@ -84,7 +86,7 @@ app.get('/auth/callback', async (req, res) => {
     }
 });
 
-app.get('/auth/verify', verifyIdentity, async (req, res) => {
+app.get('/auth/verify', verifyIdentity, (req, res) => {
     res.status(200).json({ authorised: true });
 });
 
@@ -189,10 +191,52 @@ function checkPullRequestIsMerged(req, res, next) {
     }
 }
 
+/**
+ * Checking if all is well before starting the server
+ *  */
+
+// Are the environment variables all set up?
+const { GITHUB_GRABL_TOKEN, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, SERVER_CERTIFICATE, SERVER_KEY } = process.env;
+if (!GITHUB_GRABL_TOKEN || !GITHUB_CLIENT_ID || !GITHUB_CLIENT_SECRET || !SERVER_CERTIFICATE || !SERVER_KEY) {
+    console.error(`
+    At least one of the required environmental variables is missing.
+    To troubleshoot this:
+        1. check the implementation of the function that is the source of this message, to find out what environmental variables are required.
+        2. ensure that all required environmental variables are defined within /etc/environment on the machine that runs the web-server.
+        3. get in touch with the team to obtain the required values to update /etc/environment
+    `)
+    process.exit(1);
+}
+
+// Is the ElasticSearch server running?
+esClient.ping((err) => {
+    if (err) {
+        console.error("Elastic Search Server is down. Makes sure it's up and running before starting the web-server.");
+        process.exit(1);
+    }
+})
+
+// Are the graknlabs members fetched successfully?
+let graknLabsMembers;
+getGraknLabsMembers(GRABL_TOKEN).then((members) => graknLabsMembers = members).catch((err) => { printMembersFetchError(err) });
+setInterval(async () => {
+    getGraknLabsMembers(GRABL_TOKEN).then((members) => graknLabsMembers = members).catch((err) => { printMembersFetchError(err) });
+}, config.auth.intervalInMinutesToFetchGraknLabsMembers * 60 * 1000);
+
+const printMembersFetchError = (err) => {
+    console.error("There was a problem fetching members of Grakn Labs Github organisation for the purpose of authentication:", err);
+    process.exit(1);
+}
+
+const KEY = process.env.SERVER_KEY;
+const CERTIFICATE = process.env.SERVER_CERTIFICATE;
+const credentials = { key: KEY, cert: CERTIFICATE };
+const httpsServer = https.createServer(credentials, app);
+
 // Start http server only when invoked by script
 if (!module.parent) {
     // specifying the hostname, 2nd argument, forces the server to accept connections on IPv4 address
-    app.listen(config.web.port, "0.0.0.0", () => console.log(`Grakn Benchmark Service listening on port ${config.web.port}!`));
+    httpsServer.listen(config.web.port.https, "0.0.0.0", () => console.log(`Grakn Benchmark Service listening on port ${config.web.port.https}!`));
 }
 // Register shutdown hook to properly terminate connection to ES
 process.on('exit', () => { esClient.close(); });

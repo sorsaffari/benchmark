@@ -1,20 +1,6 @@
 const Octokit = require('@octokit/rest');
 const { spawn } = require('child_process');
 
-const checkForEnvVariables = () => {
-    const { GITHUB_GRABL_TOKEN, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } = process.env;
-    if (!GITHUB_GRABL_TOKEN || !GITHUB_CLIENT_ID || !GITHUB_CLIENT_SECRET) {
-        console.error(`
-        At least one of the required environmental variables is missing.
-        To troubleshoot this:
-            1. check the implementation of the function that is the source of this message, to find out what environmental variables are required.
-            2. ensure that all required environmental variables are defined within /etc/environment on the machine that runs the web-server.
-            3. get in touch with the team to obtain the required values to update /etc/environment
-        `)
-        process.exit(1);
-    }
-};
-
 function displayStream(stream) {
     return new Promise((resolve, reject) => {
         stream.stdout.on('data', (data) => {
@@ -33,17 +19,14 @@ function displayStream(stream) {
     })
 
 }
-const GRABL_TOKEN = process.env.GITHUB_GRABL_TOKEN;
-const orgOctokit = new Octokit({ auth: GRABL_TOKEN });
 
-const getGithubUserAccessToken = async (oauthCode) => {
-    const CLIENT_ID = process.env.GITHUB_CLIENT_ID;
-    const CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
+const getGithubUserAccessToken = async (client_id, client_secret, grabl_token, oauthCode) => {
+    const orgOctokit = new Octokit({ auth: grabl_token });
 
     const accessTokenResp = await orgOctokit.request('POST https://github.com/login/oauth/access_token', {
         headers: { Accept: "application/json" },
-        client_id: CLIENT_ID,
-        client_secret: CLIENT_SECRET,
+        client_id,
+        client_secret,
         code: oauthCode
     });
     return accessTokenResp.data.access_token;
@@ -58,14 +41,13 @@ const getGithubUserId = async (accessToken) => {
     return userResp.data.id
 }
 
-const isUserGraknLabsMember = async (userId) => {
+const getGraknLabsMembers = async (grabl_token) => {
+    const orgOctokit = new Octokit({ auth: grabl_token });
     const membersResp = await orgOctokit.orgs.listMembers({ org: 'graknlabs' });
-    const members = membersResp.data;
-    return members.some((member) => member.id === userId);
+    return membersResp.data;
 }
 
 module.exports = {
-    checkForEnvVariables,
     parseMergedPR(req) {
         return {
             id: req.body.pull_request.merge_commit_sha + Date.now(),
@@ -99,5 +81,5 @@ module.exports = {
     },
     getGithubUserAccessToken,
     getGithubUserId,
-    isUserGraknLabsMember
+    getGraknLabsMembers,
 }

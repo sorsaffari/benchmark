@@ -39,7 +39,7 @@ def graknlabs_client_java():
          commit = "f88efa6def4132d6a51e7550bdd376a3ff8e1904", # sync-marker: do not remove this comment, this is used for sync-dependencies by @graknlabs_client_java
      )
 
-def graknlabs_protocol():
+def graknlabs_protocol(): # TODO: Reconsider whether we need to load this explicit after we complete issue graknlabs/grakn#5272
     git_repository(
         name = "graknlabs_protocol",
         remote = "https://github.com/graknlabs/protocol",

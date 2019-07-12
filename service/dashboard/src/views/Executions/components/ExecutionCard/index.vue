@@ -150,8 +150,7 @@ export default {
           if (isConfirmed) {
             BenchmarkClient.deleteExecution(execution)
               .then(() => {
-                this.$message({
-                  showClose: true,
+                this.$root.$emit('show:flash', {
                   message: 'The execution was deleted successfully.',
                   type: 'success',
                 });
@@ -160,10 +159,8 @@ export default {
                 this.$emit('reload-required');
               })
               .catch(() => {
-                this.$message({
-                  showClose: true,
-                  message:
-                    'Deleting the execution failed. Check the console logs to find out why.',
+                this.$root.$emit('show:flash', {
+                  message: 'Deleting the execution failed. Check the console logs to find out why.',
                   type: 'error',
                 });
               });
@@ -178,8 +175,7 @@ export default {
           if (isConfirmed) {
             BenchmarkClient.stopExecution(execution)
               .then(() => {
-                this.$message({
-                  showClose: true,
+                this.$root.$emit('show:flash', {
                   message: 'The execution was stopped successfully.',
                   type: 'success',
                 });
@@ -188,10 +184,8 @@ export default {
                 this.$emit('reload-required');
               })
               .catch(() => {
-                this.$message({
-                  showClose: true,
-                  message:
-                  'Stoping the execution failed. Check the console logs to find out why.',
+                this.$root.$emit('show:flash', {
+                  message: 'Stoping the execution failed. Check the console logs to find out why.',
                   type: 'error',
                 });
               });

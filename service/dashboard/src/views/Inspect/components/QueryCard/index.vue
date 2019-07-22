@@ -1,7 +1,7 @@
 <template>
   <!-- <b-container fluid> -->
   <div
-    ref="expanded"
+    :ref="queryExpanded ? 'expanded' : ''"
     :class="'query-card ' + (queryExpanded ? 'expanded' : '')"
   >
     <div
@@ -42,7 +42,7 @@
                 v-for="span in outlierSpans"
                 :key="span.rep"
               >
-                Rep {{ span.rep + 1 }}: {{ span.duration | fixedMs }} ms
+                Rep {{ span.rep + 1 }}: {{ fixedMs(span.duration) }} ms
               </p>
             </div>
           </div>
@@ -89,24 +89,15 @@ import BenchmarkClient from '@/util/BenchmarkClient';
 import StepsTable from '../StepsTable';
 import 'echarts/lib/chart/bar';
 import 'echarts/lib/component/tooltip';
-import EDF from '@/util/ExecutionDataFormatters';
-import util from './util';
-import math from '@/util/math';
+import { flattenStepSpans, attachRepsToChildSpans } from '@/util/ExecutionDataFormatters';
+import { getQueryCardChartOptions, produceStepsAndGroups } from './util';
+import {
+  getMean, getStdDeviation, getMedian, getOutliers,
+} from '@/util/math';
 
-const { getMedian, getOutliers } = math;
-
-const { getQueryCardChartOptions } = util;
-
-const { flattenStepSpans, attachRepsToChildSpans } = EDF;
 
 export default {
   components: { EChart, StepsTable },
-
-  filters: {
-    fixedMs(num) {
-      return `${Number(num / 1000).toFixed(3)}`;
-    },
-  },
 
   props: {
     query: {
@@ -127,9 +118,7 @@ export default {
 
   data() {
     return {
-      loading: {
-        show: false,
-      },
+      loading: { show: false },
 
       stepSpans: [],
 
@@ -137,6 +126,7 @@ export default {
 
       queryExpanded: this.expanded,
 
+      // used within the component that fills the right-side panel (e.g. stepsTable) to be set as the max-height of the relevant element
       expandedSummaryHeight: 0,
     };
   },
@@ -169,12 +159,14 @@ export default {
       ];
     },
 
-    queryCardChartOptions() {
-      return getQueryCardChartOptions(this.histogramSpans);
+    histogramSpans() {
+      return this.querySpans
+        .filter(duration => !this.outlierSpans.includes(duration))
+        .sort((a, b) => (a.duration > b.duration ? 1 : -1));
     },
 
-    spanOfFirstRep() {
-      return this.querySpans.filter(span => span.rep === 0)[0];
+    queryCardChartOptions() {
+      return getQueryCardChartOptions(this.histogramSpans);
     },
 
     spansSortedByDuration() {
@@ -183,34 +175,21 @@ export default {
     },
 
     outlierSpans() {
-      const outliers = getOutliers(this.querySpans.map(span => span.duration))
-        .upper;
+      const durations = this.spansSortedByDuration.map(span => span.duration);
+      const outliers = getOutliers(durations).upper;
       return this.querySpans.filter(span => outliers.includes(span.duration));
     },
 
-    histogramSpans() {
-      return this.querySpans
-        .filter(duration => !this.outlierSpans.includes(duration))
-        .sort((a, b) => (a.duration > b.duration ? 1 : -1));
-    },
-
     median() {
-      const durations = this.spansSortedByDuration.map(span => span.duration);
-      return getMedian(durations).value;
+      return getMedian(this.getDurations()).value;
     },
 
     mean() {
-      return (
-        this.querySpans.map(span => span.duration).reduce((a, b) => a + b, 0)
-        / this.querySpans.length
-      );
+      return getMean(this.getDurations());
     },
 
     stdDeviation() {
-      const sum = this.querySpans
-        .map(span => (span.duration - this.mean) ** 2)
-        .reduce((a, b) => a + b, 0);
-      return Math.sqrt(sum / this.querySpans.length);
+      return getStdDeviation(this.getDurations());
     },
 
     reps() {
@@ -239,6 +218,10 @@ export default {
       return `${Number(num / 1000).toFixed(3)}`;
     },
 
+    getDurations() {
+      return this.querySpans.map(span => span.duration);
+    },
+
     async toggleStepsTable() {
       this.loading.show = true;
 
@@ -265,51 +248,7 @@ export default {
       stepSpans = flattenStepSpans(stepSpans);
       this.stepSpans = attachRepsToChildSpans(stepSpans, this.querySpans);
 
-      this.produceStepsAndGroups();
-    },
-
-    /**
-     * iterates over fetched stepSpans to find out which spans should belong to a "group"
-     * the group object has one key i.e. 'members'
-     * 'members' is an object where:
-     *    - keys are the distinct 'order' of its members
-     *    - values are array of span objects
-     */
-    produceStepsAndGroups() {
-      const steps = this.stepSpans.filter(span => span.rep === 0);
-      steps.sort((a, b) => a.order - b.order);
-
-      let currentStep = steps[0];
-      let currentSteps = [];
-      let i = 0;
-
-      do {
-        if (steps[i].name === currentStep.name) {
-          currentSteps.push(steps[i]);
-          i += 1;
-        } else {
-          const stepOrGroup = this.buildStepOrGroup(currentSteps);
-          this.stepsAndGroups.push(stepOrGroup);
-          currentStep = steps[i];
-          currentSteps = [];
-        }
-      } while (i < steps.length);
-
-      // last step is not a group. insert it.
-      this.stepsAndGroups.push(steps[steps.length - 1]);
-    },
-
-    buildStepOrGroup(grouppedSteps) {
-      if (grouppedSteps.length > 1) {
-        const group = { members: {} };
-        grouppedSteps.forEach((grouppedStep) => {
-          group.members[grouppedStep.order] = this.filterStepSpans(
-            grouppedStep.order,
-          );
-        });
-        return group;
-      }
-      return grouppedSteps[0];
+      produceStepsAndGroups(this.stepSpans, this.stepsAndGroups, this.filterStepSpans);
     },
 
     filterStepSpans(stepNumber) {

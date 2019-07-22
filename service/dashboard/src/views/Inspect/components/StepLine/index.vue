@@ -38,11 +38,10 @@
 </template>
 
 <script>
-import BenchmarkClient from '@/util/BenchmarkClient';
-import EDF from '@/util/ExecutionDataFormatters';
 import ordinal from 'ordinal';
-
-const { flattenStepSpans, attachRepsToChildSpans } = EDF;
+import BenchmarkClient from '@/util/BenchmarkClient';
+import { flattenStepSpans, attachRepsToChildSpans } from '@/util/ExecutionDataFormatters';
+import { getMedian } from '@/util/math';
 
 export default {
   name: 'StepLine',
@@ -115,13 +114,8 @@ export default {
     },
 
     median() {
-      const lowMiddleIndex = Math.floor((this.sortedSpans.length - 1) / 2);
-      const highMiddleIndex = Math.ceil((this.sortedSpans.length - 1) / 2);
-      return (
-        (this.sortedSpans[lowMiddleIndex].duration
-          + this.sortedSpans[highMiddleIndex].duration)
-        / 2
-      );
+      const dueations = this.sortedSpans.map(span => span.duration);
+      return getMedian(dueations).value;
     },
 
     reps() {
@@ -146,25 +140,23 @@ export default {
       let childStepSpans = childStepSpansResp.data.childrenSpans;
       childStepSpans = flattenStepSpans(childStepSpans, this.stepSpans);
 
-      this.childStepSpans = attachRepsToChildSpans(
-        childStepSpans,
-        this.stepSpans,
-      );
+      this.childStepSpans = attachRepsToChildSpans(childStepSpans, this.stepSpans);
 
       if (this.childStepSpans.length) {
         const { parentId } = this.childStepSpans[0];
 
-        this.childStepNames = this.childStepSpans
-          .filter(childStepSpan => childStepSpan.parentId === parentId)
+        this.childStepNames = this.filterChildStepNames(parentId)
           .sort((a, b) => a.timestamp > b.timestamp)
           .map(childStepSpan => childStepSpan.name);
       }
     },
 
     filterChildStepSpans(childStepName) {
-      return this.childStepSpans.filter(
-        childStepSpan => childStepSpan.name === childStepName,
-      );
+      return this.childStepSpans.filter(childStepSpan => childStepSpan.name === childStepName);
+    },
+
+    filterChildStepNames(parentId) {
+      return this.childStepSpans.filter(childStepSpan => childStepSpan.parentId === parentId);
     },
   },
 };

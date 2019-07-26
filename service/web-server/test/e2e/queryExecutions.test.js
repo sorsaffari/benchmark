@@ -1,7 +1,8 @@
 const request = require('supertest');
 const elasticsearch = require('elasticsearch');
 const ExecutionsController = require('../../src/ExecutionsController');
-const app = require('../../src/server'); 
+const app = require('../../src/server');
+ 
 let esClient;
 let execController;
 

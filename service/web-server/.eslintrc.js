@@ -9,8 +9,7 @@ module.exports =  {
     sourceType:  'module',
   },
   rules:  {
-    'max-len': ['error', { ignoreComments: true, code: 150 }],
-    // place to specify ESLint rules. Can be used to overwrite rules specified from the extended configs
+    'max-len': ['error', { ignoreComments: true, code: 160 }],
     "@typescript-eslint/interface-name-prefix": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/no-use-before-define": "off",

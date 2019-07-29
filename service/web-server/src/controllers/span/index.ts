@@ -1,4 +1,4 @@
-import * as graphqlHTTP from 'express-graphql';
+import graphqlHTTP from 'express-graphql';
 import { Client as IEsClient, RequestParams } from '@elastic/elasticsearch';
 import { limitResults } from '../utils';
 import { GraphQLSchema } from 'graphql';

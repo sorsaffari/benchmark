@@ -13,6 +13,7 @@ export interface IConfig {
     };
     logDir: string;
     appRoot: string;
+    userRoot: string;
 }
 
 export const config: IConfig = {
@@ -28,5 +29,6 @@ export const config: IConfig = {
         intervalInMinutesToFetchGraknLabsMembers: 10,
     },
     logDir: (process.env.NODE_ENV === 'production' ?  `${__dirname}/../../logs/`: `${__dirname}/../../logs`),
-    appRoot: `${__dirname}/../`
+    appRoot: `${__dirname}/../../`,
+    userRoot: '/home/ubuntu'
 };

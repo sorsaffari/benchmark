@@ -2,13 +2,15 @@
  * /routes/execution
  */
 
-import * as express from 'express';
+import express from 'express';
 import { Client as IEsClient } from '@elastic/elasticsearch';
 import { ExecutionController, IExecutionController } from '../controllers/execution';
 
 export const getExecutionRoutes = (esClient: IEsClient) => {
     const controller: IExecutionController = new ExecutionController(esClient);
     const router = express.Router();
+
+    router.post('/pull_request', controller.isPRMerged, controller.create);
 
     router.post('/new', controller.create);
 

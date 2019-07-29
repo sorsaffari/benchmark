@@ -11,29 +11,31 @@ import { getAuthRoutes } from './routes/auth';
 import { getEsClient } from './utils';
 
 
-const server = new Server();
+const server = Server();
 
 if (server.isReady()) {
     server.loadEnvVars();
     server.registerRoutes();
     server.start();
 } else {
-    server.errors.forEach((error) => { console.log(error); });
+    Object.values(server.errors).forEach((error) => { console.log(error); });
     process.exit(1);
 }
 
 function Server() {
-    this.app = express();
-    this.esClient = getEsClient();
-    this.env = process.env.NODE_ENV || 'production';
-    this.errors = {
-        envVariablesMissing: undefined,
-        esServerDown: undefined
-    };
-    this.isReady = isReady.bind(this);
-    this.loadEnvVars = loadEnvVars.bind(this);
-    this.registerRoutes = registerRoutes.bind(this);
-    this.start = start.bind(this);
+    return {
+        app: express(),
+        esClient: getEsClient(),
+        env: process.env.NODE_ENV || 'production',
+        errors: {
+            envVariablesMissing: undefined,
+            esServerDown: undefined
+        },
+        isReady,
+        loadEnvVars,
+        registerRoutes,
+        start
+    }
 }
 
 function loadEnvVars() {
@@ -94,7 +96,6 @@ function isReady(): boolean {
         /**
          * ensuring the Elasticsearch server is running
          */
-
         this.esClient.ping((error) => {
             if (error) { this.errors.esServerDown = "Elastic Search Server is down. Makes sure it's up and running before starting the web-server."; }
         });

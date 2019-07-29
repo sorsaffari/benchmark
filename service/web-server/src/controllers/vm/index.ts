@@ -5,8 +5,7 @@ import { config } from '../../config';
 
 export interface IVMController {
     execution: IExecution;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    computeClient: any;
+    computeClient;
     zone: 'us-east1-b';
     project: 'grakn-dev';
     machineType: 'n1-standard-16';
@@ -16,15 +15,13 @@ export interface IVMController {
     webUri: string;
     logDir: string;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    start: () => Promise<any>;
+    start: () => Promise<void>;
     execute: () => Promise<void>;
     terminate: () => Promise<void>;
     downloadLogs: () => Promise<void>;
 }
 
-// tslint:disable-next-line: function-name
-export function VMController(this: IVMController, execution: IExecution) {
+export function VMController(execution: IExecution) {
     this.execution = execution;
     this.computeClient = new ComputeClient();
     this.zone = 'us-east1-b';
@@ -41,7 +38,7 @@ export function VMController(this: IVMController, execution: IExecution) {
     this.downloadLogs = downloadLogs.bind(this);
 }
 
-async function start(this: IVMController) {
+async function start() {
     const { vmName } = this.execution;
 
     const config = {
@@ -73,7 +70,7 @@ async function start(this: IVMController) {
     console.log(`${vmName} VM instance is up and running.`);
 }
 
-async function execute(this: IVMController) {
+async function execute() {
     const { vmName, commit, repoUrl, id } = this.execution;
     const bashFile = `${__dirname}/scripts/runExecute.sh`;
     const executeFile = `${config.appRoot}/resources/execute.sh`;
@@ -86,7 +83,7 @@ async function execute(this: IVMController) {
     ).catch((error) => { throw error; });
 }
 
-async function terminate(this: IVMController) {
+async function terminate() {
     const vmName: string = this.execution.vmName;
 
     console.log(`Terminating ${vmName} VM instance.`);
@@ -104,7 +101,7 @@ async function terminate(this: IVMController) {
     });
 }
 
-async function downloadLogs(this: IVMController) {
+async function downloadLogs() {
     const { vmName } = this.execution;
     const bashFile = `${__dirname}/scripts/downloadLogs.sh`;
 

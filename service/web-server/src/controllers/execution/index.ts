@@ -21,7 +21,7 @@ export interface IExecutionController {
     create: (req, res) => {};
     updateStatus: (req, res, status) => {};
     destroy: (req, res) => {};
-    getGraphqlServer: () => {};
+    getGraphqlServer: () => graphqlHTTP.Middleware;
     updateStatusInternal: (execution: IExecution, status: TStatus) => Promise<void>;
 }
 
@@ -124,11 +124,12 @@ async function destroy(req, res) {
     }
 }
 
-function getGraphqlServer() {
-    return graphqlHTTP({
+function getGraphqlServer(): graphqlHTTP.Middleware {
+    const options: graphqlHTTP.OptionsData = {
         schema,
-        context: { client: this.esClient },
-    });
+        context: { client: this.esClient }
+    };
+    return graphqlHTTP(options);
 }
 
 const typeDefs = `

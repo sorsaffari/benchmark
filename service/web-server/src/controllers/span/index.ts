@@ -10,7 +10,7 @@ const ES_PAYLOAD_COMMON = { index: 'benchmark*', type: 'span' };
 export interface ISpanController {
     esClient: IEsClient;
 
-    getGraphqlServer: () => {};
+    getGraphqlServer: graphqlHTTP.Middleware;
 }
 
 export function SpanController(client: IEsClient) {
@@ -19,11 +19,12 @@ export function SpanController(client: IEsClient) {
     this.getGraphqlServer = getGraphqlServer.bind(this);
 }
 
-function getGraphqlServer() {
-    return graphqlHTTP({
+function getGraphqlServer(): graphqlHTTP.Middleware {
+    const options: graphqlHTTP.OptionsData = {
         schema,
-        context: { client: this.esClient },
-    });
+        context: { client: this.esClient }
+    };
+    return graphqlHTTP(options);
 }
 
 const typeDefs = `

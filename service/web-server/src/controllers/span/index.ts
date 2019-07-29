@@ -158,10 +158,10 @@ const resolvers = {
 
         childrenSpans: async (object, args, context) => {
             const filterResults = (args) => {
-                const should = [];
+                let should = [];
 
                 const { parentId } = args;
-                if (parentId) parentId.map((parentId) => ({ match: { parentId }}));
+                if (parentId) should = parentId.map((parentId) => ({ match: { parentId }}));
 
                 return { query: { bool: { should } } };
             }

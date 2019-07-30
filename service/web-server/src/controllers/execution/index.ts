@@ -99,18 +99,14 @@ async function create(req, res) {
 }
 
 async function createInternal(execution) {
-    try {
-        const { id, ...body } = execution;
-        const payload: RequestParams.Create<Omit<IExecution, 'id'>> = { ...ES_PAYLOAD_COMMON, id, body };
-        await this.esClient.create(payload);
+    const { id, ...body } = execution;
+    const payload: RequestParams.Create<Omit<IExecution, 'id'>> = { ...ES_PAYLOAD_COMMON, id, body };
+    await this.esClient.create(payload);
 
-        console.log(`New execution ${execution.id} added to ES.`);
+    console.log(`New execution ${execution.id} added to ES.`);
 
-        const vm: IVMController = new VMController(execution);
-        vm.start().then(() => { vm.execute(); });
-    } catch (error) {
-        throw error;
-    }
+    const vm: IVMController = new VMController(execution);
+    vm.start().then(() => { vm.execute(); });
 }
 
 async function updateStatus(req, res, status: TStatus) {

@@ -1,4 +1,5 @@
-import * as graphqlHTTP from 'express-graphql';
+/* eslint-disable @typescript-eslint/camelcase */
+import graphqlHTTP from 'express-graphql';
 import { makeExecutableSchema, IResolvers } from 'graphql-tools';
 import { Client as IEsClient, RequestParams } from '@elastic/elasticsearch';
 import { VMController, IVMController } from '../vm';
@@ -18,21 +19,58 @@ const statuses: { [key: string]: TStatus } = {
 
 export interface IExecutionController {
     esClient: IEsClient;
+
+    watchPR: (req, res) => {};
     create: (req, res) => {};
     updateStatus: (req, res, status) => {};
     destroy: (req, res) => {};
-    getGraphqlServer: () => {};
+    getGraphqlServer: () => graphqlHTTP.Middleware;
     updateStatusInternal: (execution: IExecution, status: TStatus) => Promise<void>;
+
+    isPRMerged: (req, res, next) => {};
 }
 
 export function ExecutionController(client: IEsClient) {
     this.esClient = client;
 
     this.create = create.bind(this);
+    this.createInternal = createInternal.bind(this);
     this.updateStatus = updateStatus.bind(this);
+    this.updateStatusInternal = updateStatusInternal.bind(this);
     this.destroy = destroy.bind(this);
     this.getGraphqlServer = getGraphqlServer.bind(this);
-    this.updateStatusInternal = updateStatusInternal.bind(this);
+    this.watchPR = watchPR.bind(this);
+    this.isPRMerged = isPRMerged.bind(this);
+}
+
+async function watchPR(req, res) {
+    const {
+        body: {
+            pull_request: { merge_commit_sha, merged_at, number },
+            repository: { html_url}
+        }
+    } = req;
+
+    const execution: IExecution = {
+        id: merge_commit_sha + Date.now(),
+        commit: merge_commit_sha,
+        repoUrl: html_url,
+        prMergedAt: merged_at,
+        prUrl: html_url,
+        prNumber: number,
+        executionInitialisedAt: new Date().toISOString(),
+        status: 'INITIALISING',
+        vmName: `benchmark-executor-${merge_commit_sha.trim()}`,
+    };
+
+
+    try {
+        await this.createInternal(execution);
+        res.status(200).json({ triggered: true});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ triggered: false, error });
+    }
 }
 
 async function create(req, res) {
@@ -52,22 +90,23 @@ async function create(req, res) {
     };
 
     try {
-        const { id, ...body } = execution;
-        const payload: RequestParams.Create<Omit<IExecution, 'id'>> = { ...ES_PAYLOAD_COMMON, id, body };
-        await this.esClient.create(payload);
-
-        res.status(200).json({ triggered: true });
-
-        console.log(`New execution ${execution.id} added to ES.`);
-
-        const vm: IVMController = new VMController(execution);
-        await vm.start();
-        await vm.execute();
-
+        await this.createInternal(execution);
+        res.status(200).json({ triggered: true});
     } catch (error) {
-        console.log(error);
-        await this.updateStatusInternal(execution, statuses.FAILED).catch((error) => { console.log(error); });
+        console.error(error);
+        res.status(500).json({ triggered: false, error });
     }
+}
+
+async function createInternal(execution) {
+    const { id, ...body } = execution;
+    const payload: RequestParams.Create<Omit<IExecution, 'id'>> = { ...ES_PAYLOAD_COMMON, id, body };
+    await this.esClient.create(payload);
+
+    console.log(`New execution ${execution.id} added to ES.`);
+
+    const vm: IVMController = new VMController(execution);
+    vm.start().then(() => { vm.execute(); });
 }
 
 async function updateStatus(req, res, status: TStatus) {
@@ -85,7 +124,7 @@ async function updateStatus(req, res, status: TStatus) {
 // since updating the status of an execution needs to be done both internally (in the process of running the benchmark)
 // and externally (via the dashboard), we need this method which is called directly for internal use, and through
 // its wrapper for external use
-async function updateStatusInternal(execution: IExecution, status: TStatus): Promise<void> {
+async function updateStatusInternal(execution: IExecution, status: TStatus) {
     const payload: RequestParams.Update<{ doc: Partial<IExecution> }> = {
         ...ES_PAYLOAD_COMMON, id: execution.id, body: { doc: { status } },
     };
@@ -124,11 +163,12 @@ async function destroy(req, res) {
     }
 }
 
-function getGraphqlServer() {
-    return graphqlHTTP({
+function getGraphqlServer(): graphqlHTTP.Middleware {
+    const options: graphqlHTTP.OptionsData = {
         schema,
-        context: { client: this.esClient },
-    });
+        context: { client: this.esClient }
+    };
+    return graphqlHTTP(options);
 }
 
 const typeDefs = `
@@ -212,3 +252,9 @@ const resolvers: IResolvers = {
 };
 
 const schema: GraphQLSchema = makeExecutableSchema({ typeDefs, resolvers });
+
+function isPRMerged (req, res, next) {
+    const { body: { action, pull_request: { merged }}} = req;
+    const isMerged = action === 'closed' && merged;
+    isMerged ? next() : res.status(200).json({ triggered: false, error: 'PR has not been merged yet.' });
+}

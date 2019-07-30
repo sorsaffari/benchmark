@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-var-requires */
-import * as Octokit from '@octokit/rest';
+import Octokit from '@octokit/rest';
 import { Client as EsClient, ClientOptions } from '@elastic/elasticsearch';
 import { config } from './config';
 const { spawn } = require('child_process');

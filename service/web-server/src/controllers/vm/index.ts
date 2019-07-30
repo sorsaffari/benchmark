@@ -1,4 +1,4 @@
-import * as ComputeClient from '@google-cloud/compute';
+import ComputeClient from '@google-cloud/compute';
 import { spawn, exec } from 'child-process-promise';
 import { IExecution } from '../../types';
 import { config } from '../../config';
@@ -13,7 +13,7 @@ export interface IVMController {
     logsDestPath: string;
     esUri: string;
     webUri: string;
-    logDir: string;
+    logPath: string;
 
     start: () => Promise<void>;
     execute: () => Promise<void>;
@@ -30,7 +30,7 @@ export function VMController(execution: IExecution) {
     this.imageName = 'benchmark-executor-image-2';
     this.esUri = `${config.es.host}:${config.es.port}`;
     this.webUri = `${config.web.host}`;
-    this.logDir = config.logDir;
+    this.logPath = config.logPath;
 
     this.start = start.bind(this);
     this.execute = execute.bind(this);
@@ -73,7 +73,7 @@ async function start() {
 async function execute() {
     const { vmName, commit, repoUrl, id } = this.execution;
     const bashFile = `${__dirname}/scripts/runExecute.sh`;
-    const executeFile = `${config.appRoot}/resources/execute.sh`;
+    const executeFile = `${config.resourcesPath}/execute.sh`;
 
     console.log(`Executing benchmark on ${vmName} VM instance.`);
 
@@ -109,7 +109,7 @@ async function downloadLogs() {
 
     await executeBashOnVm(
         bashFile,
-        [vmName, this.zone, this.logDir],
+        [vmName, this.zone, this.logPath],
     ).catch((error) => { throw error; });
 }
 

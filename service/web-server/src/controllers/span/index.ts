@@ -1,4 +1,4 @@
-import * as graphqlHTTP from 'express-graphql';
+import graphqlHTTP from 'express-graphql';
 import { Client as IEsClient, RequestParams } from '@elastic/elasticsearch';
 import { limitResults } from '../utils';
 import { GraphQLSchema } from 'graphql';
@@ -10,7 +10,7 @@ const ES_PAYLOAD_COMMON = { index: 'benchmark*', type: 'span' };
 export interface ISpanController {
     esClient: IEsClient;
 
-    getGraphqlServer: () => {};
+    getGraphqlServer: () => graphqlHTTP.Middleware;
 }
 
 export function SpanController(client: IEsClient) {
@@ -19,11 +19,12 @@ export function SpanController(client: IEsClient) {
     this.getGraphqlServer = getGraphqlServer.bind(this);
 }
 
-function getGraphqlServer() {
-    return graphqlHTTP({
+function getGraphqlServer(): graphqlHTTP.Middleware {
+    const options: graphqlHTTP.OptionsData = {
         schema,
-        context: { client: this.esClient },
-    });
+        context: { client: this.esClient }
+    };
+    return graphqlHTTP(options);
 }
 
 const typeDefs = `
@@ -158,10 +159,10 @@ const resolvers = {
 
         childrenSpans: async (object, args, context) => {
             const filterResults = (args) => {
-                const should = [];
+                let should = [];
 
                 const { parentId } = args;
-                if (parentId) parentId.map((parentId) => ({ match: { parentId }}));
+                if (parentId) should = parentId.map((parentId) => ({ match: { parentId }}));
 
                 return { query: { bool: { should } } };
             }

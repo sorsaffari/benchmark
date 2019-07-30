@@ -2,7 +2,7 @@
  * /routes/span
  */
 
-import * as express from 'express';
+import express from 'express';
 import { Client as IEsClient } from '@elastic/elasticsearch';
 import { SpanController, ISpanController } from '../controllers/span';
 

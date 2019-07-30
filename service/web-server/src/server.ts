@@ -39,11 +39,7 @@ function Server() {
 }
 
 function loadEnvVars() {
-    if (this.env === 'development') {
-        require('dotenv').config({ path: `${config.appRoot}/.env` });
-    } else if (this.env === 'production') {
-        require('dotenv').config({ path: `${config.userRoot}/.env` });
-    }
+    require('dotenv').config({ path: config.envPath });
 }
 
 function registerRoutes() {
@@ -67,8 +63,7 @@ function registerRoutes() {
     // 3. is not a direct file request, i.e. the requested path does not contain a . (DOT) character and
     // 4. does not match a pattern provided in options.rewrites (read docs of connect-history-api-fallback)
     this.app.use(history());
-    console.log(`${config.appRoot}../dashboard/dist`);
-    this.app.use(express.static(`${config.appRoot}/../dashboard/dist`));
+    this.app.use(express.static(`${config.dashboardPath}`));
 }
 
 function isReady(): boolean {

@@ -11,9 +11,10 @@ export interface IConfig {
     auth: {
         intervalInMinutesToFetchGraknLabsMembers: number;
     };
-    logDir: string;
-    appRoot: string;
-    userRoot: string;
+    logPath: string;
+    envPath: string;
+    resourcesPath: string;
+    dashboardPath: string;
 }
 
 export const config: IConfig = {
@@ -28,7 +29,8 @@ export const config: IConfig = {
     auth: {
         intervalInMinutesToFetchGraknLabsMembers: 10,
     },
-    logDir: (process.env.NODE_ENV === 'production' ?  `${__dirname}/../../logs/`: `${__dirname}/../../logs`),
-    appRoot: `${__dirname}/../../`,
-    userRoot: '/home/ubuntu'
+    logPath: (process.env.NODE_ENV === 'production' ?  '/home/ubuntu' : `${__dirname}/../../logs`),
+    envPath: (process.env.NODE_ENV === 'production' ?  '/home/ubuntu/.env' : `${__dirname}/../.env`),
+    resourcesPath: `${__dirname}/../resources`,
+    dashboardPath: `${__dirname}/../../dashboard/dist`
 };

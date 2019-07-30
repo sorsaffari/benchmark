@@ -16,7 +16,7 @@ export const getAuthRoutes = () => {
     //       list of graknlabs github members.
     controller.updateGraknlabsMembers();
 
-    router.post('/callback', controller.callback);
+    router.post('/callback', controller.oauthCallback);
 
     router.post('/verify', controller.checkVerification, controller.verify);
 

@@ -8,7 +8,7 @@ const GRABL_TOKEN = process.env.GITHUB_GRABL_TOKEN as string;
 
 export interface IAuthController {
     updateGraknlabsMembers: () => void;
-    callback: (req, res) => {};
+    oauthCallback: (req, res) => void;
     verify: (req, res, status) => void;
     checkVerification: (req, res, next) => void;
 }
@@ -16,13 +16,12 @@ export interface IAuthController {
 export function AuthController(): IAuthController {
     return {
         updateGraknlabsMembers,
-        callback,
+        oauthCallback,
         verify,
         checkVerification
     };
 }
-
-async function callback(req, res) {
+async function oauthCallback(req, res) {
     try {
         const oauthCode = req.query.code;
         const accessToken = await getGithubUserAccessToken(CLIENT_ID, CLIENT_SECRET, GRABL_TOKEN, oauthCode);

@@ -1,22 +1,27 @@
 import { getGithubClient, IGithubClient } from './githubClient';
-import { config } from '../config';
+import { IGlobal } from '../types';
 
 export interface IAuthController {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     graknLabsMembers: undefined | any[];
-    updateGraknlabsMembers: () => void;
     oauthCallback: (req, res) => void;
     verify: (req, res, status) => void;
-    checkVerification: (req, res, next) => void;
 }
 
-export function AuthController(): IAuthController {
+export function getAuthController(): IAuthController {
+
+    // NOTE: as a temporary solution:
+    //       we fetch and update graknlabsMembers
+    //       in regular intervals in order to
+    //       verify the users against a recent
+    //       list of graknlabs github members.
+    const ghClient = getGithubClient();
+    ghClient.updateGraknlabsMembers();
+
     return {
         graknLabsMembers: undefined,
-        updateGraknlabsMembers,
         oauthCallback,
         verify,
-        checkVerification
     };
 }
 
@@ -26,7 +31,7 @@ async function oauthCallback(req, res) {
         const ghClient: IGithubClient = getGithubClient(oauthCode);
 
         const userId = await ghClient.getUserId();
-        const isAuthorised = this.graknlabsMembers.some(member => member.id === userId);
+        const isAuthorised = (global as IGlobal).graknlabsMembers.some(member => member.id === userId);
 
         if (isAuthorised) {
             req.session.userId = userId;
@@ -45,21 +50,4 @@ async function oauthCallback(req, res) {
 
 function verify (req, res) {
     res.status(200).json({ authorised: true });
-}
-
-function checkVerification (req, res, next) {
-    const { userId } = req.session;
-    const isVerified = userId && this.graknlabsMembers.some(member => member.id === userId);
-    if (isVerified) next();
-    else res.status(401).json({ authorised: false });
-};
-
-
-async function updateGraknlabsMembers() {
-    const ghClient: IGithubClient = getGithubClient();
-
-    this.graknlabsMembers = await ghClient.getGraknLabsMembers();
-    setInterval(async () => {
-        this.graknlabsMembers = await ghClient.getGraknLabsMembers();
-    }, config.auth.intervalInMinutesToFetchGraknLabsMembers * 60 * 1000)
 }

@@ -1,4 +1,6 @@
 import Octokit from '@octokit/rest';
+import { IGlobal } from '../types';
+import { config } from '../config';
 
 export interface IGithubClient {
     grablToken: string;
@@ -12,6 +14,7 @@ export interface IGithubClient {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getGraknLabsMembers: () => Promise<any>;
     revokeAccess: () => Promise<void>;
+    updateGraknlabsMembers: () => Promise<void>;
 }
 
 export function getGithubClient(oauthCode: string = ''): IGithubClient {
@@ -25,7 +28,8 @@ export function getGithubClient(oauthCode: string = ''): IGithubClient {
         setUserAccessToken,
         getUserId,
         getGraknLabsMembers,
-        revokeAccess
+        revokeAccess,
+        updateGraknlabsMembers
     }
 }
 
@@ -54,10 +58,15 @@ async function getGraknLabsMembers() {
 }
 
 async function revokeAccess() {
-    const oauthClient = new Octokit({
-        auth: { username: this.oauthAppId, password: this.oauthAppSecret, async on2fa() { return 'Two-factor authentication Code:'; } },
-    });
-
+    const oauthClient = new Octokit({ auth: { clientId: this.oauthAppId, clientSecret: this.oauthAppSecret } })
     // eslint-disable-next-line @typescript-eslint/camelcase
     await oauthClient.oauthAuthorizations.revokeAuthorizationForApplication({ client_id: this.oauthAppId, access_token: this.userAccessToken });
+}
+
+async function updateGraknlabsMembers() {
+    (global as IGlobal).graknlabsMembers = await this.getGraknLabsMembers();
+    setInterval(async () => {
+        (global as IGlobal).graknlabsMembers = await this.getGraknLabsMembers();
+        console.log((global as IGlobal).graknlabsMembers);
+    }, config.auth.intervalInMinutesToFetchGraknLabsMembers * 60 * 1000)
 }

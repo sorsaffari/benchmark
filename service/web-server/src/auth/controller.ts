@@ -3,7 +3,6 @@ import { IGlobal } from '../types';
 
 export interface IAuthController {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    graknLabsMembers: undefined | any[];
     oauthCallback: (req, res) => void;
     verify: (req, res, status) => void;
 }
@@ -19,7 +18,6 @@ export function getAuthController(): IAuthController {
     ghClient.updateGraknlabsMembers();
 
     return {
-        graknLabsMembers: undefined,
         oauthCallback,
         verify,
     };

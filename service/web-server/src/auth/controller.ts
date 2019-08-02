@@ -3,8 +3,8 @@ import { IGlobal } from '../types';
 
 export interface IAuthController {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    oauthCallback: (req, res) => void;
-    verify: (req, res, status) => void;
+    oauthCallback: (req, res) => Promise<void>;
+    verify: (req, res) => void;
 }
 
 export function getAuthController(): IAuthController {
@@ -14,7 +14,7 @@ export function getAuthController(): IAuthController {
     //       in regular intervals in order to
     //       verify the users against a recent
     //       list of graknlabs github members.
-    const ghClient = getGithubClient();
+    const ghClient: IGithubClient = getGithubClient();
     ghClient.updateGraknlabsMembers();
 
     return {
@@ -25,7 +25,7 @@ export function getAuthController(): IAuthController {
 
 async function oauthCallback(req, res) {
     try {
-        const oauthCode = req.query.code;
+        const oauthCode: string = req.query.code;
         const ghClient: IGithubClient = getGithubClient(oauthCode);
 
         const userId = await ghClient.getUserId();

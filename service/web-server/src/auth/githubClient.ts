@@ -1,4 +1,4 @@
-import Octokit from '@octokit/rest';
+import Octokit, { OrgsListMembersResponseItem } from '@octokit/rest';
 import { IGlobal } from '../types';
 import { config } from '../config';
 
@@ -10,9 +10,8 @@ export interface IGithubClient {
     userAccessToken: undefined |string;
 
     setUserAccessToken: () => Promise<void>;
-    getUserId: () => Promise<string>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    getGraknLabsMembers: () => Promise<any>;
+    getUserId: () => Promise<number>;
+    getGraknLabsMembers: () => Promise<OrgsListMembersResponseItem[]>;
     revokeAccess: () => Promise<void>;
     updateGraknlabsMembers: () => Promise<void>;
 }
@@ -46,14 +45,15 @@ async function getUserId() {
     await this.setUserAccessToken();
     const userClient = new Octokit({ auth: this.userAccessToken });
     const userProfile = await userClient.users.getAuthenticated();
-    const userId = userProfile.data.id;
+    const userId: number = userProfile.data.id;
     return userId;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function getGraknLabsMembers() {
     const grablClient = new Octokit({ auth: this.grablToken });
     const membersResp = await grablClient.orgs.listMembers({ org: 'graknlabs' });
-    const members = membersResp.data;
+    const members: OrgsListMembersResponseItem[] = membersResp.data;
     return members;
 }
 

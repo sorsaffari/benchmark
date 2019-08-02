@@ -20,8 +20,8 @@ const statuses: { [key: string]: TStatus } = {
 export interface IExecutionController {
     esClient: IEsClient;
 
-    watchPR: (req, res) => {};
-    create: (req, res) => {};
+    watchPR: (req, res) => Promise<void>;
+    create: (req, res) => Promise<void>;
     createInternal: (execution: IExecution) => Promise<void>;
     updateStatus: (req, res, status: TStatus) => Promise<void>;
     destroy: (req, res) => Promise<void>;
@@ -107,7 +107,7 @@ async function createInternal(execution) {
 }
 
 async function updateStatus(req, res, status: TStatus) {
-    const execution = req.body;
+    const execution: IExecution = req.body;
 
     try {
         const payload: RequestParams.Update<{ doc: Partial<IExecution> }> = {

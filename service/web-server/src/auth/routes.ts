@@ -6,7 +6,7 @@ import express from 'express';
 import { getAuthController } from './controller';
 import { checkVerification } from './middlewares';
 
-export const getAuthRoutes = () => {
+export const getAuthRoutes = (): express.Router => {
     const controller = getAuthController();
     const router = express.Router();
 

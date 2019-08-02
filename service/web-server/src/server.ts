@@ -78,7 +78,6 @@ function registerRoutes() {
         name: 'session', // set as key on the req object
         keys: [process.env.GITHUB_CLIENT_SECRET as string], // used as a key in signing and verifying cookie values
     }));
-
     this.app.use('/auth', getAuthRoutes());
 
     // Changes the requested location to the (default) /index.html, whenever there is a request which fulfills the following criteria:
@@ -92,9 +91,9 @@ function registerRoutes() {
 }
 
 function start() {
-    const invokedByScript = !module.parent;
+    const isInvokedByScript = !module.parent;
 
-    if (invokedByScript) {
+    if (isInvokedByScript) {
         let server;
         if (this.env === 'development') {
             server = http.createServer(this.app);

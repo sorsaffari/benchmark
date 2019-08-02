@@ -12,7 +12,7 @@ import { getEsClient } from './utils';
 import { Client as IEsClient } from '@elastic/elasticsearch';
 
 
-const server = Server();
+const server = getServer();
 
 try {
     server.loadEnvVars();
@@ -33,7 +33,7 @@ interface IServer {
     start: () => void;
 }
 
-function Server(): IServer {
+function getServer(): IServer {
     return {
         app: express(),
         esClient: getEsClient(),

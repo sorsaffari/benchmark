@@ -67,6 +67,5 @@ async function updateGraknlabsMembers() {
     (global as IGlobal).graknlabsMembers = await this.getGraknLabsMembers();
     setInterval(async () => {
         (global as IGlobal).graknlabsMembers = await this.getGraknLabsMembers();
-        console.log((global as IGlobal).graknlabsMembers);
     }, config.auth.intervalInMinutesToFetchGraknLabsMembers * 60 * 1000)
 }

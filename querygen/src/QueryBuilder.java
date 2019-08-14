@@ -1,3 +1,21 @@
+/*
+ *  GRAKN.AI - THE KNOWLEDGE GRAPH
+ *  Copyright (C) 2019 Grakn Labs Ltd
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package grakn.benchmark.querygen;
 
 import grakn.client.GraknClient;
@@ -12,7 +30,6 @@ import graql.lang.statement.StatementInstance;
 import graql.lang.statement.Variable;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -20,7 +37,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class QueryBuilder {
 
@@ -129,6 +145,33 @@ public class QueryBuilder {
         } else {
             return pairs.stream().map(Pair::getSecond).collect(Collectors.toList());
         }
+    }
+
+
+    /**
+    * @return all variables in this query
+    */
+    Set<Variable> allVariables() {
+        return variableTypeMap.keySet();
+    }
+
+
+    /**
+     * @return Set of variables that are representing relations
+     */
+    Set<Variable> relationVariables() {
+        return variableTypeMap.entrySet().stream().filter(entry -> entry.getValue().isRelationType()).map(Map.Entry::getKey).collect(Collectors.toSet());
+    }
+
+    /**
+     * @return List of variables representing attributes that are owned by a variable
+     */
+    List<Variable> attributesOwned(Variable var) {
+        return attributeOwnership.get(var);
+    }
+
+    int numAttributeComparisons() {
+        return attributeComparisons.size();
     }
 
     GraqlGet build(GraknClient.Transaction tx, Random random) {

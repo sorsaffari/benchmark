@@ -53,6 +53,7 @@ public class QueryGenerator {
         for (int i = 0; i < numQueries; i++) {
             try (GraknClient.Transaction tx = session.transaction().write()) {
                 QueryBuilder builder = generateNewQuery(tx);
+                Vectoriser queryVectoriser = new Vectoriser(builder);
                 queries.add(builder.build(tx, random));
             }
         }
@@ -129,7 +130,7 @@ public class QueryGenerator {
         // obtain all roles this concept type can play
         List<Role> playableRoles = variableType.playing().filter(role -> !role.isImplicit()).collect(Collectors.toList());
 
-        double relationGenerateProbability = 0.8;
+        double relationGenerateProbability = 0.5;
         double relationGenerateProbabilityReduction = 0.5;
         double nextRandom = random.nextDouble();
 

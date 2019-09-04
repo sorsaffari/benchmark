@@ -18,6 +18,7 @@ gcloud compute ssh ubuntu@$INSTANCE_NAME --zone=$ZONE --command='if ps -C node; 
 gcloud compute ssh ubuntu@$INSTANCE_NAME --zone=$ZONE --command='sudo rm -rf ~/service/web-server/'
 
 echo "Preparing web-server content for upload"
+# compressin the content of the web-server with the exception of node_modules/ 
 zip -r web-server.zip web-server -x web-server/node_modules/\*
 
 echo "Uploading web-server to $INSTANCE_NAME..."

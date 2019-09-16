@@ -100,8 +100,11 @@ graknlabs_grakn_core_maven_dependencies()
 load("@graknlabs_build_tools//bazel:dependencies.bzl", "bazel_rules_docker")
 bazel_rules_docker()
 
-load("@graknlabs_grakn_core//dependencies/graknlabs:dependencies.bzl", "graknlabs_graql")
+load("@graknlabs_grakn_core//dependencies/graknlabs:dependencies.bzl",
+"graknlabs_graql", "graknlabs_common", "graknlabs_console")
 graknlabs_graql()
+graknlabs_common()
+graknlabs_console()
 
 ###########################
 # Load Graql dependencies #

@@ -16,7 +16,22 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-github.repository=benchmark
-maven.repository-url.snapshot=http://maven.grakn.ai/nexus/content/repositories/snapshots
-maven.repository-url.release=http://maven.grakn.ai/nexus/content/repositories/releases
-maven.packages=lib
+java_library(
+    name = "query-generator",
+    srcs = glob(["*.java"]),
+    deps = [
+        "@graknlabs_client_java//:client-java",
+        "@graknlabs_graql//java:graql",
+        "@graknlabs_grakn_core//api:api",
+        "@graknlabs_grakn_core//concept:concept",
+
+        # together these can be used to create clients with tracing enabled
+        "//dependencies/maven/artifacts/org/slf4j:slf4j-api",
+#        "//dependencies/maven/artifacts/commons-cli",
+    ],
+    runtime_deps = [
+        "//dependencies/maven/artifacts/io/grpc:grpc-netty-shaded",
+        "//dependencies/maven/artifacts/ch/qos/logback:logback-classic",
+    ],
+    visibility = ["//visibility:public"]
+)

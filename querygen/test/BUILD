@@ -16,7 +16,16 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-github.repository=benchmark
-maven.repository-url.snapshot=http://maven.grakn.ai/nexus/content/repositories/snapshots
-maven.repository-url.release=http://maven.grakn.ai/nexus/content/repositories/releases
-maven.packages=lib
+
+java_test(
+    name = "vectoriser-test",
+    test_class = "grakn.benchmark.querygen.VectoriserTest",
+    srcs = ["VectoriserTest.java"],
+    deps = [
+        "//querygen/src:query-generator",
+        "@graknlabs_grakn_core//concept:concept",
+        "@graknlabs_graql//java:graql",
+        "//dependencies/maven/artifacts/org/mockito:mockito-core",
+        "//dependencies/maven/artifacts/org/hamcrest:hamcrest-all"
+    ],
+)

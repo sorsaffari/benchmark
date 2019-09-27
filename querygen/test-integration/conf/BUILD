@@ -16,7 +16,4 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-github.repository=benchmark
-maven.repository-url.snapshot=http://maven.grakn.ai/nexus/content/repositories/snapshots
-maven.repository-url.release=http://maven.grakn.ai/nexus/content/repositories/releases
-maven.packages=lib
+exports_files(["cassandra-embedded.yaml", "grakn.properties"])

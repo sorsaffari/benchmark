@@ -16,7 +16,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-github.repository=benchmark
-maven.repository-url.snapshot=http://maven.grakn.ai/nexus/content/repositories/snapshots
-maven.repository-url.release=http://maven.grakn.ai/nexus/content/repositories/releases
-maven.packages=lib
+filegroup(
+    name = "logback-test",
+    srcs = ["logback.xml"],
+    visibility = ["//visibility:public"]
+)
+
+
+exports_files(["schema.gql"])

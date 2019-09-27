@@ -10,6 +10,7 @@ export interface IVMClient {
     project: 'grakn-dev';
     machineType: 'n1-standard-16';
     imageName: 'benchmark-executor-image-2';
+    tags: string[];
     esUri: string;
     webUri: string;
     logPath: string;
@@ -28,6 +29,7 @@ export function getVMClient(execution: IExecution): IVMClient {
         project: 'grakn-dev',
         machineType: 'n1-standard-16',
         imageName: 'benchmark-executor-image-2',
+        tags: ['zipkin-9411'],
         esUri: `${config.es.host}:${config.es.port}`,
         webUri: `${config.web.host}`,
         logPath: config.logPath,
@@ -46,11 +48,13 @@ async function start() {
         machineType: this.machineType,
         disks: [{
             boot: true,
+            autoDelete: true,
             initializeParams: {
                 sourceImage:
                     `https://www.googleapis.com/compute/v1/projects/${this.project}/global/images/${this.imageName}`,
             },
         }],
+        tags: this.tags,
         // this config assigns an external IP to the VM instance which is required for ssh access
         networkInterfaces: [{ accessConfigs: [{}] }],
     };
@@ -65,7 +69,7 @@ async function start() {
     const [metadata] = await vm.getMetadata();
     const ip: string = metadata.networkInterfaces[0].accessConfigs[0].natIP;
 
-    console.log(`${vmName} VM instance is starting. Waiting for IP `);
+    console.log(`${vmName} VM instance is starting. Waiting for IP ${ip} `);
     await pingVM(ip);
 
     console.log(`${vmName} VM instance is up and running.`);

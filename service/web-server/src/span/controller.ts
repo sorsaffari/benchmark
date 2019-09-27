@@ -3,7 +3,7 @@ import { Client as IEsClient, RequestParams } from '@elastic/elasticsearch';
 import { limitResults } from '../utils';
 import { GraphQLSchema } from 'graphql';
 import { makeExecutableSchema } from 'graphql-tools';
-
+import { GraphQLLong } from '../graphqlTypes';
 
 const ES_PAYLOAD_COMMON = { index: 'benchmark*', type: 'span' };
 
@@ -28,6 +28,8 @@ function getGraphqlServer(): graphqlHTTP.Middleware {
 }
 
 const typeDefs = `
+  scalar Long
+
   type Query {
     querySpans(
         parentId: String,
@@ -50,7 +52,7 @@ const typeDefs = `
 
   type ChildSpan {
     id: String!
-    duration: Int!
+    duration: Long!
     name: String!
     timestamp: String
     tags: ChildSpanTag
@@ -63,7 +65,7 @@ const typeDefs = `
 
   type ExecutionSpan {
     id: String!
-    duration: Int!
+    duration: Long!
     name: String!
     tags: ExecutionSpanTag
   }
@@ -81,7 +83,7 @@ const typeDefs = `
   type QuerySpan {
     id: String!
     parentId: String
-    duration: Int!
+    duration: Long!
     name: String!
     tags: QuerySpanTag
   }
@@ -95,6 +97,7 @@ const typeDefs = `
 `;
 
 const resolvers = {
+    Long: GraphQLLong,
     Query: {
         querySpans: async (object, args, context, ) => {
             const filterResults = (args) => {
